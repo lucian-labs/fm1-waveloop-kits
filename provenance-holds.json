@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/ELI7VH/switchblade",
+  "base": "1bb03f2c928e75c6045b93716e584fe97aae7732",
+  "target": "1934f1c042cc0fc2e3f5807417d23e3c33e07e9e",
+  "patch": "patches/switchblade-played-holds.patch",
+  "sha256": "026e5a39f29f44a643b102294afe87d162ad96274c6781d294a1ecce48fc09e6",
+  "license": "GPL-3.0-only",
+  "hardware_install": "pending; device MIDI ports absent during preparation"
+}

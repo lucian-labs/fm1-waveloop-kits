@@ -1,0 +1,559 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 70c9b8c..8686a1e 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -19,3 +19,5 @@ for unit ownership, firmware safety and the FM-1 handoff queue.
+ - Stopped, armed melodic step entry reserves held-note K1 for tie length. Release after stretching advances by note_len; other held knobs keep parameter locks. See `docs/NOTE-STRETCH.md`.
+ 
+ - `fm1-sb-live` master controls reserve Ch16 CC20–23 (repeat/dirt/delay/filter). The preset is `controllers/fm1-sb-live.minilab3`; see `docs/FM1-SB-LIVE.md`. Read-only editor command 82 exposes their live values.
++
++- Live-recorded synth holds use FOR6 Q8 durations in the synth-only hit/acc bytes; FOR4/FOR5 import retains old timing. Read `docs/PLAYED-HOLDS.md` before changing gate/tie playback or project encoding.
+diff --git a/controllers/README.md b/controllers/README.md
+index e68dc13..63c2e03 100644
+--- a/controllers/README.md
++++ b/controllers/README.md
+@@ -3,7 +3,7 @@
+ Import **fm1-sb-live.minilab3** in Arturia MIDI Control Center, select the User
+ memory you want, then **Store To**. Select that program on the MiniLab.
+ The native file imported successfully into MIDI Control Center 1.2.0.
+-It requires the matching Switch Blade **v0.1-wl-live5** firmware for master effects.
++It requires the matching Switch Blade **v0.1-wl-live5 or newer** firmware for master effects.
+ 
+ Connect MiniLab MIDI OUT to FM-1 MIDI IN. Use keyboard MIDI channel **16** to
+ play the selected FM-1 track; pads stay on channel 4 for the drum track. Keep
+@@ -57,3 +57,7 @@ Felucca / Switch Blade PERFORM and MIDI paths; preserve their GPL-3.0-only
+ headers and credits. New master-strip integration is by Elijah Lucian / Lucian Labs.
+ 
+ MIDI Control Center may move an imported file into its Templates directory. A copy is retained here and in the release bundle.
++
++In **v0.1-wl-hold6**, live-recorded synth releases follow your played hold time;
++start quantization and the MiniLab preset stay the same. See
++[played holds](../docs/PLAYED-HOLDS.md).
+diff --git a/docs/128-STEPS.md b/docs/128-STEPS.md
+index 9ff7261..cb3c33a 100644
+--- a/docs/128-STEPS.md
++++ b/docs/128-STEPS.md
+@@ -22,7 +22,8 @@ Automation places use nine bits: `track << 7 | step`.
+ 
+ Legacy FOR4 (3840 bytes) loads with its existing first 64 steps, timing, sounds,
+ drum masks and converted automation addresses; upper steps initialize empty.
+-New saves use FOR5. Older firmware cannot read FOR5: export a backup before a
++The 128-step build originally saved FOR5; current builds save same-sized FOR6
++for [played hold timing](PLAYED-HOLDS.md). Older firmware cannot read FOR6: export a backup before a
+ downgrade. No automatic conversion back to a shorter format is provided.
+ 
+ The four RAM project caches move from retained NOINIT to zeroed POOL and reload
+diff --git a/docs/PLAYED-HOLDS.md b/docs/PLAYED-HOLDS.md
+new file mode 100644
+index 0000000..5928442
+--- /dev/null
++++ b/docs/PLAYED-HOLDS.md
+@@ -0,0 +1,47 @@
++# Played note lengths
++
++New live recordings keep the time from key-down to release. Start quantization
++(`QUANTIZE ON`) still snaps the attack to the nearest step. Release timing is
++independent of the global GATE setting. No new control is needed.
++
++- Synth chords share a duration, ending when the last key is released.
++- Drum hits stay one-shots. Stopped K1 hold-and-stretch entry stays step based.
++- Editing a note's LEN explicitly returns it to manual GATE/TIE timing.
++- Existing recordings retain their original timing; record a new take for this behavior.
++
++Duration is stored in 1/256-step units, not whole steps (about 0.49 ms at
++120 BPM and 1/16 division). Playback note-offs run at the audio control-block
++resolution. The duration follows tempo and division, including external-clock
++sequencing. As before, one step holds one chord; a new chord in another step
++ends the previous recording group. A subsequent NOTE or REST can interrupt a
++hold. STOP finalizes recording and releases playback. The arp receives the
++same timed chord; its own pattern/gates and ATTACH setting still govern its notes.
++
++## Project compatibility
++
++FOR6 retains FOR5's 6400-byte size, 128 steps, and flash layout. Each synth
++attack uses its previously unused `hit`/`acc` bytes for a little-endian Q8
++hold duration, 1..32768; zero keeps legacy GATE/TIE playback. DRUM still uses
++those bytes as lane/accents masks. TIE continuation cells cover the actual
++swung span; they do not restart the release timer.
++
++FOR4 and FOR5 load through the importer with zero synth duration and their
++original timing. New saves use FOR6, which earlier firmware cannot read.
++Keep a pre-update backup for rollback. Project restore carries the byte
++interpretation into the engine switch; changing a track between DRUM and a
++synth clears these engine-specific bytes instead of interpreting them as
++another engine's data.
++
++## Verification
++
++`tests/played_hold_test.c` checks fractional releases, quantized starts,
++long holds, chords, STOP, swing, pattern wrap, full-pattern limits, arp gates,
++tempo scaling, manual LEN override, engine switching and FOR5 migration.
++All 26 hold checks, 22 K1 stretch checks, 98 extended-step checks and 33 drum
++checks pass. Project, motion, persistence, backup, MIDI, arp and sequence-tool
++suites pass. All 157 audio golden renders remain unchanged, with zero health,
++routing, voice or CPU-budget failures. Target build: 486156-byte image,
++64280/73728 bytes main RAM, 341724/368640 bytes pool.
++The existing K1 stretch and drum suites remain separate regression checks.
++Hardware installation/listening is pending: no FM-1 MIDI ports were present
++when v0.1-wl-hold6 was prepared.
+diff --git a/firmware/src/core.h b/firmware/src/core.h
+index 4c3d2ec..d520269 100644
+--- a/firmware/src/core.h
++++ b/firmware/src/core.h
+@@ -217,9 +217,18 @@ typedef struct {                 /* acid-style step: up to 4 notes (POLY), time,
+     uint8_t time;                /* ST_NOTE / ST_TIE / ST_REST */
+     uint8_t flags;               /* SF_ACCENT | SF_SLIDE | SF_RATCH */
+     uint8_t vel;
+-    uint8_t hit, acc;            /* DRUM: eight kit lanes and their accents; notes[] keeps legacy/variant hits */
++    uint8_t hit, acc;            /* DRUM: lanes/accents. Synth: recorded Q8 hold; notes[] carries pitches. */
+     uint8_t probability;         /* 0 = legacy 100%; 1..100 = percent, 101 = silent; 1.5.5: 102..112 a condition */
+ } step_t;
++/* Synth-only recorded duration: Q8 steps; zero retains manual GATE/TIE behavior.
++ * DRUM uses the same two bytes as lane masks. No extra project/flash space. */
++static uint32_t step_hold_q8(const step_t *s) {
++    uint32_t q = s->hit | (uint32_t)s->acc << 8;
++    return s->time == ST_NOTE && s->n && q <= NSTEP * 256u ? q : 0u;
++}
++static void step_set_hold_q8(step_t *s, uint32_t q) {
++    s->hit = (uint8_t)q; s->acc = (uint8_t)(q >> 8);
++}
+ 
+ /* Probability keeps zero-initialized and legacy patterns at 100%. */
+ /* 1.5.5 (#209): CONDITIONS, in the chance byte's free values (no format change): COND_FIRST + c - 1 is condition c
+@@ -337,6 +346,8 @@ typedef struct track {
+     uint8_t slide_glide;         /* next legato note glides (slide) */
+     uint8_t rat_left;            /* RATCH: repeats of the playing step still to come (seq.c seq_ratchet) */
+     uint32_t seq_off;
++    uint8_t step_drum;           /* interpretation of step hit/acc, updated on project restore */
++    uint8_t seq_timed;           /* recorded release timer spans TIE steps */
+     uint8_t seq_active;          /* any step programmed */
+     uint8_t rskip_idx;           /* live recording put notes into the step about to play: */
+     uint8_t rskip_n, rskip[12];  /* do not trigger them again there (they sound already) */
+@@ -346,6 +357,7 @@ typedef struct track {
+     uint8_t nd_fired;            /* that step + 1 once it played early (its start then plays nothing), 0 = none */
+     /* live recording of held notes (seq.c rec_hold): the steps they are held into become TIEs */
+     uint8_t rh_n, rh_note[4];    /* recorded notes still held, 0 = none */
++    uint32_t rh_clock, rh_remainder;           /* held time in Q16 steps, independent of onset snapping */
+     uint8_t rh_start;            /* the step they were recorded into */
+     uint8_t rh_ties;             /* TIE steps written after it */
+     uint8_t rh_last;             /* the last of them; rh_bak: what it held (an early release puts it back) */
+diff --git a/firmware/src/felucca.c b/firmware/src/felucca.c
+index 738a3b3..c20154e 100644
+--- a/firmware/src/felucca.c
++++ b/firmware/src/felucca.c
+@@ -31,7 +31,7 @@
+ #define FELUCCA_ID "FM-1_940"    /* package identity (build.py: the .fwsc marker string) */
+ #endif
+ #ifndef FELUCCA_VERSION
+-#define FELUCCA_VERSION "v0.1-wl-live5" /* shown in the menu, the console and the editor; build.py --release X.Y */
++#define FELUCCA_VERSION "v0.1-wl-hold6" /* shown in the menu, the console and the editor; build.py --release X.Y */
+ #endif
+ #if FELUCCA_OTA && !FELUCCA_FLASH
+ #error "FELUCCA_OTA needs FELUCCA_FLASH"
+diff --git a/firmware/src/project.c b/firmware/src/project.c
+index 380b01b..6d6522d 100644
+--- a/firmware/src/project.c
++++ b/firmware/src/project.c
+@@ -1,13 +1,16 @@
+ /* SPDX-License-Identifier: GPL-3.0-only
+  * Copyright (C) 2026 Leo Kuroshita (@kurogedelic), Hügelton Instruments */
+-/* FOR5 projects: four tracks of 128 steps, 128 automation/lock records and
++/* FOR6 projects: four tracks of 128 steps, 128 automation/lock records and
+  * per-track SHAYPE / drum state. The 6400-byte wire object is distinct from the
+  * runtime structure. Storage extends each A/B base with one retired-sample sector.
+  * Legacy FOR4 (3840 bytes, 64 steps) imports without changing its sounds or timing;
+- * upper steps start empty. Older firmware cannot load newly saved FOR5 objects.
++ * upper steps start empty. FOR5 imports with its manual gate/tie timing.
++ * FOR6 stores synth hold duration in the otherwise unused lane bytes; old firmware
++ * cannot read new saves. The wire size and flash extents remain unchanged.
+  * RAM slot caches live in .pool, are cleared at startup and reload from flash. */
+ #define PROJ_LEGACY_MAGIC 0x34524F46u
+-#define PROJ_MAGIC 0x35524F46u                 /* "FOR5", little-endian */
++#define PROJ_PREV_MAGIC 0x35524F46u
++#define PROJ_MAGIC 0x36524F46u                 /* "FOR6", little-endian */
+ #ifndef SL_N
+ #define SL_N 12u                               /* (storage.c: WaveLoop's set list) */
+ #endif
+@@ -98,7 +101,7 @@ static int proj_engines_ok(const project_t *q)
+ }
+ static int proj_import(project_t *q, const void *b, int n)
+ {
+-    if ((n == PROJ_STORE_SIZE && ((const uint32_t *)b)[0] == PROJ_MAGIC) ||
++    if ((n == PROJ_STORE_SIZE && (((const uint32_t *)b)[0] == PROJ_MAGIC || ((const uint32_t *)b)[0] == PROJ_PREV_MAGIC)) ||
+         (n == 3840 && ((const uint32_t *)b)[0] == PROJ_LEGACY_MAGIC))
+         return proj_unpack(q, b, (uint32_t)n) && proj_engines_ok(q);
+     if (n == (int)sizeof *q && proj_ok((const project_t *)b)) {
+@@ -220,8 +223,8 @@ static int proj_pack(project_store_t *out, const project_t *q)
+                                                          * velocity 0..127, accents */
+             b[pos++] = (uint8_t)(s->n | s->time << 3 | (s->flags & 3u) << 5);
+             b[pos++] = (uint8_t)((s->vel > 127u ? 127u : s->vel) | (r & 1u) << 7);
+-            b[pos++] = q->t[t].engine == ENGI_DRUM ? s->hit : 0;
+-            b[pos++] = q->t[t].engine == ENGI_DRUM ? s->acc & s->hit : 0; /* zero in older FOR4 songs */
++            b[pos++] = q->t[t].engine == ENGI_DRUM ? s->hit : (uint8_t)step_hold_q8(s);
++            b[pos++] = q->t[t].engine == ENGI_DRUM ? s->acc & s->hit : (uint8_t)(step_hold_q8(s) >> 8); /* zero in older FOR4 songs */
+             b[pos++] = (uint8_t)(s->probability | (r >> 1) << 7);
+         }
+     }
+@@ -255,7 +258,7 @@ static int proj_unpack(project_t *q, const uint8_t *b, uint32_t st)
+     uint32_t motion_size = old ? 388u : sizeof q->motion;
+     uint32_t name_off = st - 4u - PROJ_NAME_LEN, end = name_off - NTRK * PROJ_FM6_PACKED;
+     memcpy(&magic, b, 4); memcpy(&size, b + 4, 4); memcpy(&sum, b + st - 4u, 4);
+-    if ((!old && st != PROJ_STORE_SIZE) || magic != (old ? PROJ_LEGACY_MAGIC : PROJ_MAGIC) || size != st || sum != proj_hash(b, st - 4u) ||
++    if ((!old && st != PROJ_STORE_SIZE) || (old ? magic != PROJ_LEGACY_MAGIC : magic != PROJ_MAGIC && magic != PROJ_PREV_MAGIC) || size != st || sum != proj_hash(b, st - 4u) ||
+         np != P_COUNT || 68u + NTRK * (np + 2u + ns * 9u) + sizeof q->chain + motion_size > end)
+         return 0;
+     memset(q, 0, sizeof *q); q->magic = PROJ_MAGIC; q->size = sizeof *q;
+@@ -275,8 +278,8 @@ static int proj_unpack(project_t *q, const uint8_t *b, uint32_t st)
+             meta = b[pos++];
+             s->n = meta & 7u; s->time = (meta >> 3) & 3u; s->flags = (meta >> 5) & 3u;
+             s->vel = b[pos] & 127u; meta |= (b[pos++] & 128u) << 1;      /* (RATCH bit 0 at bit 8 of meta) */
+-            s->hit = q->t[t].engine == ENGI_DRUM ? b[pos] : 0; pos++;
+-            s->acc = b[pos++] & s->hit;
++            s->hit = q->t[t].engine == ENGI_DRUM || magic == PROJ_MAGIC ? b[pos] : 0; pos++;
++            s->acc = q->t[t].engine == ENGI_DRUM ? b[pos] & s->hit : magic == PROJ_MAGIC ? b[pos] : 0; pos++;
+             s->probability = b[pos] & 127u; meta |= (b[pos++] & 128u) << 2;   /* (bit 1 at bit 9) */
+             if ((meta & 255u) > 127u || s->n > 4u || s->time > ST_REST || s->probability >= COND_FIRST + NCOND) return 0;
+             step_set_ratchet(s, (meta >> 8) + 1u);
+@@ -335,7 +338,6 @@ static void proj_steps(step_t *s)            /* a loaded sequence stays inside i
+         if (s[i].n > 4u) s[i].n = 4;
+         if (s[i].time > ST_REST) s[i].time = ST_REST;
+         for (j = 0; j < 4u; j++) s[i].note[j] &= 127u;
+-        s[i].acc &= s[i].hit;
+     }
+ }
+ 
+@@ -347,7 +349,8 @@ static void proj_bound(project_t *q)
+         proj_steps(q->t[t].step);
+         for (i = 0; i < NSTEP; i++) {
+             step_t *s = &q->t[t].step[i];
+-            if (q->t[t].engine != ENGI_DRUM) s->hit = s->acc = 0;
++            if (q->t[t].engine == ENGI_DRUM) s->acc &= s->hit;
++            else step_set_hold_q8(s, step_hold_q8(s));
+             s->flags &= 3u | SF_RATCH | SF_NUDGE;
+             s->vel &= 127u;
+             if (s->probability >= COND_FIRST + NCOND) s->probability = 0;
+@@ -615,6 +618,7 @@ static int project_restore_runtime(const project_t *input)
+             t->p[i] = (int16_t)param_fit(d, s->p[i]);
+         }
+         t->preset = (uint8_t)(ENGINES[e]->npresets ? (s->preset == PROJ_DEF_SOUND ? 0u : s->preset) % ENGINES[e]->npresets : 0u);
++        t->step_drum = e == ENGI_DRUM;
+         memcpy(t->step, s->step, sizeof t->step);
+         proj_steps(t->step);
+         if (ash_valid(&s->arp))                         /* WaveLoop: the ARP's pattern (the ISR is off) */
+diff --git a/firmware/src/seq.c b/firmware/src/seq.c
+index 5665f98..071be11 100644
+--- a/firmware/src/seq.c
++++ b/firmware/src/seq.c
+@@ -557,13 +557,37 @@ static __attribute__((noinline)) int32_t rec_nudge(int32_t off, uint32_t period)
+     return (off * NUDGE_DIV + (off < 0 ? -(int32_t)period / 2 : (int32_t)period / 2)) / (int32_t)(period ? period : 1u);
+ }
+ 
++/* Finalize the elapsed hold, retaining grid-snapped starts. Ties are only visual /
++ * continuation cells; the recorded timer, rather than GATE, controls release. */
++static void rec_finish(track_t *t)
++{
++    uint32_t len = t->p[P_SLEN] > 0 ? (uint32_t)t->p[P_SLEN] : 1u;
++    uint32_t q = (t->rh_clock + 128u) >> 8;
++    q = q < 1u ? 1u : q > len * 256u ? len * 256u : q;
++    uint32_t period = div_samples((uint32_t)t->p[P_SDIV]);
++    uint32_t gate = (uint32_t)(((uint64_t)period * q + 128u) >> 8);
++    uint32_t ties = 0, span = step_samples(t, period, t->rh_start);
++    while (span < gate && ties + 1u < len) {
++        ties++;
++        span += step_samples(t, period, (t->rh_start + ties) % len);
++    }
++    step_set_hold_q8(&t->step[t->rh_start], q);
++    if (t->rh_ties > ties)
++        t->step[t->rh_last] = t->rh_bak;
++    for (uint32_t n = t->rh_ties + 1u; n <= ties; n++) {
++        step_t *s = &t->step[(t->rh_start + n) % len];
++        memset(s, 0, sizeof *s); s->time = ST_TIE;
++    }
++    t->rh_n = 0;
++}
++
+ /* live recording: the note goes into the nearest step, as swung (the one playing, or
+  * the next one when it is past the middle of the playing one). Overdub: a step that
+  * holds notes gets this one added (a chord of up to 4; when full, the last note is
+  * replaced); MONO / LEGATO / UNISON parts keep one note per step, as step entry does.
+  * Held on (synth parts): each further step the sequencer enters while the note is
+- * held becomes a TIE (rec_hold), up to the pattern length; a release before the middle
+- * of the last one puts that step back (rec_release), so a short note stays one step.
++ * held becomes a TIE (rec_hold), up to the pattern length. The release stores
++ * elapsed time in Q8 steps, independently of the quantized note start.
+  * A note recorded into another step ends the hold before (the step model ties the
+  * notes of one step only). */
+ static void rec_note(track_t *t, uint32_t note, uint32_t vel)
+@@ -575,6 +599,7 @@ static void rec_note(track_t *t, uint32_t note, uint32_t vel)
+     step_t *s;
+     if (next)
+         idx = (idx + 1u) % len;
++    if (t->engine != ENGI_DRUM && t->rh_n && t->rh_start != idx) rec_finish(t);
+     s = &t->step[idx];
+     /* the step's notes play later in this pass (it is the next one, not played early yet, or the one playing whose
+      * nudge has not come yet): what sounds now must not play again there (rskip) */
+@@ -616,6 +641,8 @@ static void rec_note(track_t *t, uint32_t note, uint32_t vel)
+         t->rh_n = 0;
+         t->rh_start = (uint8_t)idx;
+         t->rh_ties = 0;
++        t->rh_clock = t->rh_remainder = 0;
++        step_set_hold_q8(s, 0);
+     }
+     for (k = 0; k < t->rh_n && t->rh_note[k] != note; k++)
+         ;
+@@ -631,7 +658,7 @@ static void rec_hold(track_t *t, uint32_t idx, uint32_t len)
+     if (!t->rh_n || t->engine == ENGI_DRUM)
+         return;
+     if (!((song.rec >> trk_index(t)) & 1u) || t->rh_ties + 1u >= len) {
+-        t->rh_n = 0;                                /* disarmed, or the whole pattern is this note */
++        rec_finish(t);                              /* disarmed, or a full-pattern hold */
+         return;
+     }
+     if (idx == t->rh_start)
+@@ -644,6 +671,7 @@ static void rec_hold(track_t *t, uint32_t idx, uint32_t len)
+         s->note[k] = 0;
+     s->n = 0;
+     s->time = ST_TIE;
++    s->hit = s->acc = 0;
+     s->flags = 0;
+     s->vel = 0;
+ }
+@@ -657,9 +685,7 @@ static void rec_release(track_t *t, uint32_t note)
+             t->rh_note[k++] = t->rh_note[i];
+     if (k == t->rh_n || (t->rh_n = (uint8_t)k))
+         return;                                     /* not one of them, or others still held */
+-    if (t->rh_ties && t->seq_idx == t->rh_last &&
+-        t->seq_pos < step_samples(t, div_samples((uint32_t)t->p[P_SDIV]), t->seq_idx) / 2u)
+-        t->step[t->rh_last] = t->rh_bak;            /* released early in it: not held into this step */
++    rec_finish(t);
+ }
+ 
+ /* a note into armed track t in the count-in's last eighth: kept for step 1 (cin_flush); once each, 4 per track */
+@@ -913,6 +939,7 @@ static void seq_release(track_t *t)
+     t->seq_n = 0;
+     t->seq_arp = 0;
+     t->seq_hold = 0;
++    t->seq_timed = 0;
+     t->slide_glide = 0;                             /* live MONO / LEG keys must not glide after it */
+ }
+ 
+@@ -934,7 +961,7 @@ static void seq_stop(void)
+                 arp_silence(&trk[i]);
+         }
+         seq_release(&trk[i]);
+-        trk[i].rh_n = 0;                           /* a recorded note held over the stop: as far as it got */
++        if (trk[i].rh_n) rec_finish(&trk[i]);
+         trk[i].rat_left = 0;
+         trk[i].nd_late = trk[i].nd_early = ND_NONE;   /* (a nudged step not played yet: not after the stop) */
+         trk[i].nd_fired = 0;
+@@ -1025,7 +1052,7 @@ static __attribute__((noinline)) void seq_step(track_t *t, const step_t *s, uint
+         }
+     }
+     if (s->time == ST_TIE) {
+-        if (t->seq_n) {
++        if (t->seq_n && !t->seq_timed) {
+             t->seq_off = gate + period / 2u;
+             t->seq_hold = (s->flags & SF_SLIDE) != 0 || next_tie;   /* chains hold at any GATE / swing */
+         }
+@@ -1035,6 +1062,8 @@ static __attribute__((noinline)) void seq_step(track_t *t, const step_t *s, uint
+         seq_release(t);
+         return;
+     }
++    uint32_t timed = t->engine != ENGI_DRUM && hits == 1u ? step_hold_q8(s) : 0u;
++    if (timed) gate = (uint32_t)(((uint64_t)period * timed + 128u) >> 8);
+     if (hits > 1u) {                                /* RATCH: the gate of a part, no slide or tie out */
+         gate = step_samples(t, period, idx) / hits * (uint32_t)t->p[P_SGATE] / 128u;
+         if (!(skip & SEQ_REP))
+@@ -1071,7 +1100,8 @@ static __attribute__((noinline)) void seq_step(track_t *t, const step_t *s, uint
+         }
+     }
+     if (t->p[P_AMODE] && t->engine != ENGI_DRUM) { /* WaveLoop: the ARP plays the step (its live-recorded notes too: */
+-        seq_chord(t, nn, m, vel, gate, hits == 1u && ((s->flags & SF_SLIDE) != 0 || next_tie));   /* held anyway) */
++        seq_chord(t, nn, m, vel, gate, !timed && hits == 1u && ((s->flags & SF_SLIDE) != 0 || next_tie));   /* held anyway) */
++        t->seq_timed = timed != 0;
+         return;
+     }
+     if (t->seq_arp) {                               /* (the ARP went off: its chord was no voice) */
+@@ -1098,7 +1128,8 @@ static __attribute__((noinline)) void seq_step(track_t *t, const step_t *s, uint
+         if (!((sk >> i) & 1u))
+             t->seq_notes[t->seq_n++] = nn[i];
+     t->seq_off = gate;
+-    t->seq_hold = hits == 1u && ((s->flags & SF_SLIDE) != 0 || next_tie);   /* next step a TIE: keep the notes to it */
++    t->seq_timed = timed != 0;
++    t->seq_hold = !timed && hits == 1u && ((s->flags & SF_SLIDE) != 0 || next_tie);   /* next step a TIE: keep the notes to it */
+ }
+ 
+ /* MENU > CONTROL > STEP PREVIEW (1.2, Discussion #169): the UI asks for a step of a track to sound once (aud_req: step
+@@ -1272,6 +1303,12 @@ static void seq_tick(track_t *t, uint32_t n)
+     if (!song.playing)
+         return;
+     period = div_samples((uint32_t)t->p[P_SDIV]);
++    if (t->rh_n) {
++        uint64_t ticks = (uint64_t)n * 65536u + t->rh_remainder;
++        uint32_t whole = (uint32_t)(ticks / period);
++        t->rh_clock += whole;
++        t->rh_remainder = (uint32_t)(ticks - (uint64_t)whole * period);
++    }
+     len = (uint32_t)t->p[P_SLEN];
+     len = len ? len : 1u;
+     t->seq_pos += n;
+diff --git a/firmware/src/ui.c b/firmware/src/ui.c
+index 8819ee1..93ca629 100644
+--- a/firmware/src/ui.c
++++ b/firmware/src/ui.c
+@@ -573,6 +573,7 @@ static uint32_t note_len(const track_t *t, uint32_t i)
+ }
+ static uint32_t note_set_len(track_t *t, uint32_t i, uint32_t want)
+ {
++    if (t->engine != ENGI_DRUM) step_set_hold_q8(&t->step[i], 0);
+     uint32_t len = (uint32_t)clamp(t->p[P_SLEN], 1, NSTEP), n = note_len(t, i);
+     for (; n > want && n > 1u; n--)
+         step_clear(&t->step[i + n - 1u]);
+diff --git a/firmware/src/voice.c b/firmware/src/voice.c
+index c066e86..6fbc0bc 100644
+--- a/firmware/src/voice.c
++++ b/firmware/src/voice.c
+@@ -530,6 +530,11 @@ static void engine_block(track_t *t)
+             v->stage = 0;
+             v->env = v->env_out = 0;
+         }
++        if (t->step_drum != (t->eng_req == ENGI_DRUM)) {
++            for (i = 0; i < NSTEP; i++) t->step[i].hit = t->step[i].acc = 0;
++            t->step_drum = t->eng_req == ENGI_DRUM;
++            t->rh_n = 0;
++        }
+         t->engine = eng_idx(t->eng_req);
+         eng_mem_claim(t);                               /* its state region, before the waiting notes */
+         t->xf_on = 0;
+diff --git a/tests/hostsim.c b/tests/hostsim.c
+index a22a033..41a3709 100644
+--- a/tests/hostsim.c
++++ b/tests/hostsim.c
+@@ -547,16 +547,16 @@ static int rec_test(void)
+     t3->p[P_VOICE] = V_MONO;
+     t2->p[P_SLEN] = 4;
+     t3->p[P_SSWING] = 50;                           /* odd steps start 0.2 step late */
+-    put_step(t1, 5, 1, (const uint8_t[]){48}, ST_NOTE, 0);   /* an older take: put back by an early release */
++    put_step(t1, 5, 1, (const uint8_t[]){48}, ST_NOTE, 0);   /* an older take: replaced by the recorded hold */
+     song.rec = 0x07u;
+     transport_req = 1;
+-    /* (a) held 3.3 steps from step 2: 2 NOTE, 3 4 TIE, 5 (released early in it) as before */
++    /* (a) held 3.2 steps from step 2: NOTE, three TIE cells, fractional release */
+     rec_run_to(t1, 2, 10);
+     input_on(t1, 60, 100);
+     rec_run_to(t1, 5, 30);
+     input_off(t1, 60);
+     ok_len = rec_step_is(t1, 2, ST_NOTE, 1, 60) && rec_step_is(t1, 3, ST_TIE, 0, 0) && rec_step_is(t1, 4, ST_TIE, 0, 0) &&
+-             rec_step_is(t1, 5, ST_NOTE, 1, 48);
++             rec_step_is(t1, 5, ST_TIE, 0, 0) && step_hold_q8(&t1->step[2]) > 3u * 256u;
+     /* (b) released after 0.3 step: one step */
+     rec_run_to(t1, 8, 5);
+     input_on(t1, 62, 100);
+@@ -613,7 +613,7 @@ static int rec_test(void)
+     rec_run_to(t3, 14, 50);
+     ok_mono = rec_step_is(t3, 10, ST_NOTE, 1, 60) && rec_step_is(t3, 11, ST_TIE, 0, 0) && rec_step_is(t3, 12, ST_NOTE, 1, 62) &&
+               rec_step_is(t3, 13, ST_TIE, 0, 0) && t3->step[14].time != ST_TIE;
+-    printf("tracks: recording lengths: held 3.3 steps -> NOTE TIE TIE (the 4th step put back) %s; 0.3 step -> one "
++    printf("tracks: recording lengths: held 3.2 steps -> NOTE TIE TIE TIE, fractional release %s; 0.3 step -> one "
+            "step %s; past the middle of the next -> NOTE TIE %s\n", ok_len ? "ok" : "FAIL", ok_short ? "ok" : "FAIL",
+            ok_half ? "ok" : "FAIL");
+     printf("tracks: recording lengths: a chord ties until its last key %s; capped at LEN 4 %s; MONO legato A..B -> "
+diff --git a/tests/played_hold_test.c b/tests/played_hold_test.c
+new file mode 100644
+index 0000000..dd6e2b8
+--- /dev/null
++++ b/tests/played_hold_test.c
+@@ -0,0 +1,65 @@
++/* SPDX-License-Identifier: GPL-3.0-only */
++#define UI_TEST_NO_MAIN 1
++#include "ui_test.c"
++#define CHECK(x) do { if (!(x)) {fprintf(stderr,"hold:%d %s\n",__LINE__,#x); return 1;} count++; } while(0)
++static track_t *setup(void) {
++ ui_power_on(); track_t *t=&trk[0]; track_defaults_steps(t);
++ t->p[P_SLEN]=128;t->p[P_VOICE]=V_POLY;t->p[P_SQNT]=1;
++ song.rec=1;seq_start();seq_tick(t,CTL);return t;
++}
++int main(void) {
++ int count=0;track_t *t=setup();uint32_t p=div_samples(t->p[P_SDIV]);
++ /* Release after 0.3 steps; onset stays snapped, GATE cannot round release. */
++ t->seq_pos=p/5;rec_note(t,60,90);seq_tick(t,p*3/10);rec_release(t,60);
++ uint32_t q=step_hold_q8(&t->step[0]);CHECK(q>=76&&q<=78);CHECK(t->step[0].time==ST_NOTE&&t->p[P_SQNT]);
++ song.rec=0;t->p[P_SGATE]=1;seq_step(t,&t->step[0],0,p,SEQ_ROLLED);
++ CHECK(t->seq_n==1&&t->seq_timed&&!t->seq_hold);uint32_t gate=t->seq_off;
++ CHECK(gate>p/4&&gate<p/3);song.playing=0;seq_tick(t,gate-1);CHECK(t->seq_n==1);seq_tick(t,1);CHECK(!t->seq_n);
++ /* A 1.3-step hold survives a tie and releases within it. */
++ t=setup();p=div_samples(t->p[P_SDIV]);rec_note(t,60,90);seq_tick(t,p);seq_tick(t,p*3/10);rec_release(t,60);
++ q=step_hold_q8(&t->step[0]);CHECK(q>=332&&q<=334);CHECK(t->step[1].time==ST_TIE);
++ song.rec=0;seq_step(t,&t->step[0],0,p,SEQ_ROLLED);gate=t->seq_off;
++ song.playing=0;seq_tick(t,p);uint32_t left=t->seq_off;seq_step(t,&t->step[1],1,p,SEQ_ROLLED);
++ CHECK(t->seq_n&&t->seq_off==left&&left==gate-p);seq_tick(t,left);CHECK(!t->seq_n);
++ /* Late half-step onset snaps forward, but elapsed hold remains unchanged. */
++ t=setup();p=div_samples(t->p[P_SDIV]);t->seq_pos=p*3/4;rec_note(t,62,90);seq_tick(t,p/2);rec_release(t,62);
++ CHECK(t->step[1].n==1&&step_hold_q8(&t->step[1])==128);
++ /* Last release ends a chord; STOP finalizes a still-held note. */
++ t=setup();p=div_samples(t->p[P_SDIV]);rec_note(t,60,90);rec_note(t,64,90);seq_tick(t,p/4);rec_release(t,60);
++ CHECK(t->rh_n==1);seq_tick(t,p/4);rec_release(t,64);CHECK(step_hold_q8(&t->step[0])==128);
++ rec_note(t,67,90);seq_tick(t,p/4);seq_stop();CHECK(step_hold_q8(&t->step[t->rh_start])==64&&!t->rh_n);
++ /* Same size FOR6 persists holds; FOR5 importer drops old synth mask bytes. */
++ project_t before,after;project_store_t wire;project_capture(&before);CHECK(proj_pack(&wire,&before));
++ CHECK(proj_import(&after,&wire,sizeof wire)&&step_hold_q8(&after.t[0].step[0])==64);
++ uint32_t magic=PROJ_PREV_MAGIC;memcpy(wire.raw,&magic,4);uint32_t hash=proj_hash(wire.raw,sizeof wire-4);memcpy(wire.raw+sizeof wire-4,&hash,4);
++ CHECK(proj_import(&after,&wire,sizeof wire)&&!step_hold_q8(&after.t[0].step[0]));
++ CHECK(note_set_len(t,0,2)==2&&!step_hold_q8(&t->step[0]));
++ /* Swing: a hold longer than the short step must not be cut by the next REST. */
++ t=setup();p=div_samples(t->p[P_SDIV]);t->p[P_SSWING]=50;t->seq_idx=1;t->seq_pos=0;
++ rec_note(t,60,90);seq_tick(t,p*9/10);rec_release(t,60);
++ CHECK(step_hold_q8(&t->step[1])>=229&&t->step[2].time==ST_TIE);
++ /* Pattern wrap and full-length holds preserve a bounded release. */
++ t=setup();p=div_samples(t->p[P_SDIV]);t->seq_idx=127;t->seq_pos=0;
++ rec_note(t,60,90);seq_tick(t,p);seq_tick(t,p/4);rec_release(t,60);
++ CHECK(t->step[0].time==ST_TIE&&step_hold_q8(&t->step[127])==320);
++ t=setup();p=div_samples(t->p[P_SDIV]);rec_note(t,60,90);
++ for(unsigned n=0;n<130;n++) seq_tick(t,p);
++ CHECK(!t->rh_n&&step_hold_q8(&t->step[0])<=32768&&step_hold_q8(&t->step[0])>=32512);
++ /* Drum masks, arp chord timers, and tempo-relative playback remain independent. */
++ t=setup();rec_note(t,60,90);seq_tick(t,p/4);rec_release(t,60);
++ step_set_hold_q8(&t->step[0],333);t->p[P_AMODE]=1;seq_step(t,&t->step[0],0,p*2,SEQ_ROLLED);
++ CHECK(t->seq_arp&&t->seq_timed&&!t->seq_hold&&t->seq_off==((uint64_t)p*2*333+128)/256);
++ t=setup();set_engine_of(t,ENGI_DRUM);t->engine=ENGI_DRUM;rec_note(t,42,120);seq_tick(t,p/3);rec_release(t,42);CHECK(t->step[0].hit==(1u<<drum_lane(42))&&t->step[0].acc==t->step[0].hit&&!t->rh_n);
++ /* Repeated control blocks do not accumulate rounding drift at slow divisions. */
++ t=setup();p=div_samples(t->p[P_SDIV]);rec_note(t,60,90);
++ for(unsigned n=0;n<10000;n++)seq_tick(t,CTL);
++ rec_release(t,60);CHECK(step_hold_q8(&t->step[0])==((uint64_t)10000*CTL*256+p/2)/p);
++ /* Changing between synth and drum cannot reinterpret duration bytes as hits. */
++ t=setup();step_set_hold_q8(&t->step[0],333);t->eng_req=ENGI_DRUM;
++ for(unsigned n=0;n<8;n++){t->xf=0;engine_block(t);}
++ CHECK(t->engine==ENGI_DRUM&&!t->step[0].hit&&!t->step[0].acc&&t->step_drum);
++ t->step[0].hit=8;t->step[0].acc=8;t->eng_req=0;
++ for(unsigned n=0;n<8;n++){t->xf=0;engine_block(t);}
++ CHECK(!t->step[0].hit&&!t->step[0].acc&&!t->step_drum);
++ printf("played holds: %d checks passed\n",count);return 0;
++}
+diff --git a/tests/project_test.c b/tests/project_test.c
+index 6713687..8e3d1a7 100644
+--- a/tests/project_test.c
++++ b/tests/project_test.c
+@@ -55,8 +55,8 @@ int main(void)
+     uint32_t i, k;
+     int bad = 0, ok;
+ 
+-    bad += check("identity: PROJ_MAGIC is \"FOR4\" (little-endian bytes F O R 4)", PROJ_MAGIC == 0x35524F46u &&
+-                 !memcmp("FOR5", &(uint32_t){PROJ_MAGIC}, 4));
++    bad += check("identity: PROJ_MAGIC is \"FOR6\" (little-endian bytes F O R 6)", PROJ_MAGIC == 0x36524F46u &&
++                 !memcmp("FOR6", &(uint32_t){PROJ_MAGIC}, 4));
+     bad += check("FOR4 fits one flash object, the retained cache in NOINIT", sizeof(project_store_t) <= 7936u && sizeof(project_store_t) == 6400u);
+     bad += check("five machines (WaveLoop: DRUM the fifth): NENGINES 5, P_COUNT 112 (P_MOUT just before P_E0)",
+                  NENGINES == 5u && ENGI_DRUM == 4u && P_COUNT == 112u && P_MOUT + 1u == P_E0);
+diff --git a/tests/run_tests.sh b/tests/run_tests.sh
+index a4a9c03..a06b64f 100755
+--- a/tests/run_tests.sh
++++ b/tests/run_tests.sh
+@@ -376,6 +376,8 @@ if [ -f build/gen/felucca_tables.h ]; then
+     run "fm1-sb-live: master routing, repeat bands, dirt level and delay tail" "$OUT/sb_live_test"
+     $CC -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/sb_live_protocol_test" tests/sb_live_protocol_test.c -lm
+     run "fm1-sb-live: read-only master state and project isolation" "$OUT/sb_live_protocol_test"
++    $CC -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/played_hold_test" tests/played_hold_test.c -lm
++    run "Played hold durations: quantized starts, fractional release, chords, arp and project migration" "$OUT/played_hold_test"
+     $CC -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/note_stretch_test" tests/note_stretch_test.c -lm
+     run "Held-note K1 length: panel/MIDI, release advance, chords, collisions and 128-step boundary" "$OUT/note_stretch_test"
+     $CC -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/seq_128_test" tests/seq_128_test.c -lm

@@ -27,3 +27,11 @@ Use the donor's BUILDING.md. Test with seq_128_test.c, storage_128_test.c and th
 Older firmware cannot load newly saved FOR5 projects. Older browser editors still show only the first 64 steps; the hardware handles all eight pages. This extension is not a verified port for the other mapped distros.
 
 Credit: Elijah Lucian / Lucian Labs' extension and tests, over Felucca / Switch Blade's sequencer and storage. GPL-3.0-only; preserve the [original credits](../../CREDITS.md).
+
+## Played hold timing (optional follow-up)
+
+[Played-holds patch](../../patches/switchblade-played-holds.patch) keeps start quantization while recording synth release times in 1/256-step units. It applies only to `1bb03f2c928e75c6045b93716e584fe97aae7732` and produces `1934f1c042cc0fc2e3f5807417d23e3c33e07e9e`. See [provenance](../../provenance-holds.json) and the [implementation notes](https://github.com/ELI7VH/switchblade/blob/1934f1c042cc0fc2e3f5807417d23e3c33e07e9e/docs/PLAYED-HOLDS.md).
+
+This follow-up uses FOR6, retaining FOR5's 6400-byte flash extent and importing FOR4/FOR5 with their old GATE/TIE behavior. Port `core.h`, `seq.c`, `project.c`, `voice.c` and the explicit LEN override in `ui.c` together: duration timers must survive ties, and engine switches must distinguish synth durations from drum masks. K1 step entry and drum one-shots remain unchanged. Run `played_hold_test.c` and the donor's project/MIDI/arp tests. Hardware installation and listening are pending. The other distro path maps identify adaptation points; this patch is not a verified port to those distros.
+
+Credit: Elijah Lucian / Lucian Labs' held-duration extension over the original Felucca / Switch Blade sequencing code; retain source headers and [credits](../../CREDITS.md). GPL-3.0-only.
