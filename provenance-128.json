@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/ELI7VH/switchblade",
+  "base": "ca460a2fd2be87da391b5cde33f527e04cb232e7",
+  "target": "201d86a96a162466d8170abe4f214af247a507e2",
+  "patch": "patches/switchblade-128-steps.patch",
+  "sha256": "e72a2fca4fb72afd79182f386722e6d61938dc8ae4926a4005d18533c82f6f74",
+  "license": "GPL-3.0-only"
+}

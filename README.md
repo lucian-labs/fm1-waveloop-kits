@@ -47,3 +47,7 @@ Other source distros: use the [generic integration contract](PORTING.md). No exa
 Read [CREDITS.md](CREDITS.md) before reusing code. Bundled source, fixtures and patch are GPL-3.0-only; original notices remain intact. This kit includes no firmware binaries, device backups, SDK blobs or sample packs. Linked optional dependencies retain their own licenses.
 
 Pinned source revisions and hashes live in [provenance.json](provenance.json); exact distro paths live in [manifest.json](distros/manifest.json).
+
+## 128-step extension
+
+[Eight-bar patterns at 1/16](kits/128_steps/README.md): exact-base Switch Blade patch, legacy import and atomic extended saves. Other distros need their own storage audit.
