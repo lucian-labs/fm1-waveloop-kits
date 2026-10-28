@@ -1,0 +1,736 @@
+diff --git a/firmware/src/core.h b/firmware/src/core.h
+index 9e1c704..5aeb9ee 100644
+--- a/firmware/src/core.h
++++ b/firmware/src/core.h
+@@ -215,7 +215,7 @@ typedef struct {                 /* acid-style step: up to 4 notes (POLY), time,
+     uint8_t time;                /* ST_NOTE / ST_TIE / ST_REST */
+     uint8_t flags;               /* SF_ACCENT | SF_SLIDE | SF_RATCH */
+     uint8_t vel;
+-    uint8_t hit, acc;            /* the retired DRUM grid's hits: kept in the struct, never read or stored */
++    uint8_t hit, acc;            /* DRUM: eight kit lanes and their accents; notes[] keeps legacy/variant hits */
+     uint8_t probability;         /* 0 = legacy 100%; 1..100 = percent, 101 = silent; 1.5.5: 102..112 a condition */
+ } step_t;
+ 
+@@ -329,7 +329,7 @@ typedef struct track {
+     step_t step[NSTEP];
+     uint32_t seq_pos;            /* q8 samples into the current step */
+     uint16_t seq_idx;
+-    uint8_t seq_notes[4];        /* sounding seq notes (the step's notes) */
++    uint8_t seq_notes[12];       /* sounding seq notes: 4 exact pitches + 8 drum lanes */
+     uint8_t seq_n;
+     uint8_t seq_hold;            /* last step slides: keep the notes until the next step */
+     uint8_t slide_glide;         /* next legato note glides (slide) */
+@@ -337,7 +337,7 @@ typedef struct track {
+     uint32_t seq_off;
+     uint8_t seq_active;          /* any step programmed */
+     uint8_t rskip_idx;           /* live recording put notes into the step about to play: */
+-    uint8_t rskip_n, rskip[4];   /* do not trigger them again there (they sound already) */
++    uint8_t rskip_n, rskip[12];  /* do not trigger them again there (they sound already) */
+     /* NUDGE (QUANTIZE OFF, seq.c seq_tick): a step plays at its start + its nudge. Latched as a step starts: */
+     uint32_t nd_late;            /* the step playing now plays at this seq_pos + 1 (0: it played) */
+     uint32_t nd_early;           /* the next step plays early, at this seq_pos + 1 of this one (0: on its start) */
+diff --git a/firmware/src/felucca.c b/firmware/src/felucca.c
+index fa49086..efd6fde 100644
+--- a/firmware/src/felucca.c
++++ b/firmware/src/felucca.c
+@@ -31,7 +31,7 @@
+ #define FELUCCA_ID "FM-1_940"    /* package identity (build.py: the .fwsc marker string) */
+ #endif
+ #ifndef FELUCCA_VERSION
+-#define FELUCCA_VERSION "v0.1" /* shown in the menu, the console and the editor; build.py --release X.Y */
++#define FELUCCA_VERSION "v0.1-wl-drum1" /* shown in the menu, the console and the editor; build.py --release X.Y */
+ #endif
+ #if FELUCCA_OTA && !FELUCCA_FLASH
+ #error "FELUCCA_OTA needs FELUCCA_FLASH"
+diff --git a/firmware/src/project.c b/firmware/src/project.c
+index 288100e..7b4913f 100644
+--- a/firmware/src/project.c
++++ b/firmware/src/project.c
+@@ -221,7 +221,8 @@ static int proj_pack(project_store_t *out, const project_t *q)
+                                                          * velocity 0..127, accents */
+             b[pos++] = (uint8_t)(s->n | s->time << 3 | (s->flags & 3u) << 5);
+             b[pos++] = (uint8_t)((s->vel > 127u ? 127u : s->vel) | (r & 1u) << 7);
+-            b[pos++] = 0; b[pos++] = 0;                 /* (the retired DRUM grid's hits and accents) */
++            b[pos++] = q->t[t].engine == ENGI_DRUM ? s->hit : 0;
++            b[pos++] = q->t[t].engine == ENGI_DRUM ? s->acc & s->hit : 0; /* zero in older FOR4 songs */
+             b[pos++] = (uint8_t)(s->probability | (r >> 1) << 7);
+         }
+     }
+@@ -273,7 +274,8 @@ static int proj_unpack(project_t *q, const uint8_t *b, uint32_t st)
+             meta = b[pos++];
+             s->n = meta & 7u; s->time = (meta >> 3) & 3u; s->flags = (meta >> 5) & 3u;
+             s->vel = b[pos] & 127u; meta |= (b[pos++] & 128u) << 1;      /* (RATCH bit 0 at bit 8 of meta) */
+-            pos += 2u;                                  /* (the retired DRUM grid's hits and accents: not read) */
++            s->hit = q->t[t].engine == ENGI_DRUM ? b[pos] : 0; pos++;
++            s->acc = b[pos++] & s->hit;
+             s->probability = b[pos] & 127u; meta |= (b[pos++] & 128u) << 2;   /* (bit 1 at bit 9) */
+             if ((meta & 255u) > 127u || s->n > 4u || s->time > ST_REST || s->probability >= COND_FIRST + NCOND) return 0;
+             step_set_ratchet(s, (meta >> 8) + 1u);
+@@ -317,7 +319,7 @@ static void proj_steps(step_t *s)            /* a loaded sequence stays inside i
+         if (s[i].n > 4u) s[i].n = 4;
+         if (s[i].time > ST_REST) s[i].time = ST_REST;
+         for (j = 0; j < 4u; j++) s[i].note[j] &= 127u;
+-        s[i].hit = s[i].acc = 0;
++        s[i].acc &= s[i].hit;
+     }
+ }
+ 
+@@ -329,6 +331,7 @@ static void proj_bound(project_t *q)
+         proj_steps(q->t[t].step);
+         for (i = 0; i < NSTEP; i++) {
+             step_t *s = &q->t[t].step[i];
++            if (q->t[t].engine != ENGI_DRUM) s->hit = s->acc = 0;
+             s->flags &= 3u | SF_RATCH | SF_NUDGE;
+             s->vel &= 127u;
+             if (s->probability >= COND_FIRST + NCOND) s->probability = 0;
+@@ -457,7 +460,7 @@ static uint32_t proj_density(const proj_trk_t *t, uint8_t *n)
+             const step_t *s = &t->step[i];
+             if (s->time == ST_TIE)
+                 w += 1u;
+-            else if (s->time == ST_NOTE && s->n && step_chance(s))
++            else if (s->time == ST_NOTE && (s->n || s->hit) && step_chance(s))
+                 w += (s->flags & SF_ACCENT) ? 3u : 2u;
+         }
+         w = (w + (i1 - i0) - 1u) / (i1 - i0);
+diff --git a/firmware/src/seq.c b/firmware/src/seq.c
+index 4bbeab2..5665f98 100644
+--- a/firmware/src/seq.c
++++ b/firmware/src/seq.c
+@@ -579,32 +579,39 @@ static void rec_note(track_t *t, uint32_t note, uint32_t vel)
+     /* the step's notes play later in this pass (it is the next one, not played early yet, or the one playing whose
+      * nudge has not come yet): what sounds now must not play again there (rskip) */
+     sounds = next ? t->nd_fired != idx + 1u : t->nd_late != ND_NONE;
+-    if (s->time != ST_NOTE || !s->n || trk_vmode(t) != V_POLY) {
+-        s->n = 0;                                   /* a fresh step */
++    if (s->time != ST_NOTE || (!s->n && !s->hit) || (t->engine != ENGI_DRUM && trk_vmode(t) != V_POLY)) {
++        s->n = 0; s->hit = s->acc = 0;               /* a fresh step */
+         s->flags = 0;
+         s->vel = 0;
+         step_set_nudge(s, off);
+     }
++    uint32_t lane = drum_lane(note), lane_hit = t->engine == ENGI_DRUM && note == DRUM_LANE_NOTE[lane];
++    if (lane_hit) {
++        s->hit |= (uint8_t)(1u << lane);
++        if (vel > 110u) s->acc |= (uint8_t)(1u << lane);
++        else s->acc &= (uint8_t)~(1u << lane);
++    }
+     for (k = 0; k < s->n && s->note[k] != note; k++)
+         ;
+-    if (k == s->n) {
++    if (!lane_hit && k == s->n) {
+         if (s->n < 4u)
+             s->n++;
+         s->note[s->n - 1u] = (uint8_t)note;
+     }
+     s->time = ST_NOTE;
+-    if (vel > 110)
++    if (vel > 110 && !lane_hit)
+         s->flags |= SF_ACCENT;
+-    if (vel > s->vel)
++    if ((!lane_hit || vel <= 110u) && vel > s->vel)
+         s->vel = (uint8_t)vel;
+     t->seq_active = 1;
+     if (sounds) {                                   /* it sounds now: the step must not trigger it again */
+         if (t->rskip_idx != idx)
+             t->rskip_n = 0;
+         t->rskip_idx = (uint8_t)idx;
+-        if (t->rskip_n < 4u)
++        if (t->rskip_n < sizeof t->rskip)
+             t->rskip[t->rskip_n++] = (uint8_t)note;
+     }
++    if (t->engine == ENGI_DRUM) return;          /* hits never tie into the next beat */
+     if (!t->rh_n || t->rh_start != idx) {           /* a new hold (one in another step ends) */
+         t->rh_n = 0;
+         t->rh_start = (uint8_t)idx;
+@@ -621,7 +628,7 @@ static void rec_hold(track_t *t, uint32_t idx, uint32_t len)
+ {
+     step_t *s;
+     uint32_t k;
+-    if (!t->rh_n)
++    if (!t->rh_n || t->engine == ENGI_DRUM)
+         return;
+     if (!((song.rec >> trk_index(t)) & 1u) || t->rh_ties + 1u >= len) {
+         t->rh_n = 0;                                /* disarmed, or the whole pattern is this note */
+@@ -829,7 +836,7 @@ static void keyboard_block(void)
+     }
+     lay = (fm1_in.buttons & kb_mask) || kb_lock;  /* (#83: kb_lock, a layer locked open with no button held) */
+     fx = (fm1_in.buttons & perf_mask) || (kb_lock & 2u);
+-    mute = song.grid == 2u ? ~0u : song.grid == 3u ? SONG_KEYS : song.grid == 4u ? ARP_KEYS : 0u;   /* the keys that
++    mute = (song.grid == 2u || song.grid == 5u) ? ~0u : song.grid == 3u ? SONG_KEYS : song.grid == 4u ? ARP_KEYS : 0u;   /* the keys that
+                                                   * never sound here (4: the ARP page's, ui_arp.c) */
+     for (k = 0; k < 27u; k++) {
+         if (!((ch >> k) & 1u))
+@@ -1004,7 +1011,7 @@ static __attribute__((noinline)) void seq_step(track_t *t, const step_t *s, uint
+     uint32_t len = t->p[P_SLEN] ? (uint32_t)t->p[P_SLEN] : 1u;
+     uint32_t next_tie = seq_steps(t)[(idx + 1u) % len].time == ST_TIE;
+     uint32_t hits = step_ratchet(s);
+-    uint8_t nn[4], vv[4];                           /* the notes it plays */
++    uint8_t nn[12], vv[12];                         /* four exact GM notes plus eight drum lanes */
+     uint32_t m = 0, sk = 0;
+     /* QNT SEQ: the step's notes snap to the scale as they play. SEQ+T (#218): moved by TRN first, as the keys are.
+      * seq_notes keeps the notes that sound: their note-offs match */
+@@ -1024,7 +1031,7 @@ static __attribute__((noinline)) void seq_step(track_t *t, const step_t *s, uint
+         }
+         return;
+     }
+-    if (s->time == ST_REST || !s->n) {
++    if (s->time == ST_REST || (!s->n && !(t->engine == ENGI_DRUM && s->hit))) {
+         seq_release(t);
+         return;
+     }
+@@ -1047,7 +1054,23 @@ static __attribute__((noinline)) void seq_step(track_t *t, const step_t *s, uint
+         sk |= ((skip >> i) & 1u) << m;
+         m++;
+     }
+-    if (t->p[P_AMODE]) {                            /* WaveLoop: the ARP plays the step (its live-recorded notes too: */
++    if (t->engine == ENGI_DRUM) {
++        for (i = 0; i < DV_NLANE; i++) {
++            uint32_t note = DRUM_LANE_NOTE[i];
++            if (!((s->hit >> i) & 1u)) continue;
++            for (j = 0; j < m && nn[j] != note; j++) ;
++            if (j < m) {                            /* old note + lane: one trigger, its lane accent/skip still applies */
++                if ((s->acc >> i) & 1u) vv[j] = 127;
++                sk |= ((skip >> (4u + i)) & 1u) << j;
++                continue;
++            }
++            nn[m] = (uint8_t)note;
++            vv[m] = (uint8_t)(((s->acc >> i) & 1u) ? 127u : vel);
++            sk |= ((skip >> (4u + i)) & 1u) << m;
++            m++;
++        }
++    }
++    if (t->p[P_AMODE] && t->engine != ENGI_DRUM) { /* WaveLoop: the ARP plays the step (its live-recorded notes too: */
+         seq_chord(t, nn, m, vel, gate, hits == 1u && ((s->flags & SF_SLIDE) != 0 || next_tie));   /* held anyway) */
+         return;
+     }
+@@ -1121,7 +1144,7 @@ static __attribute__((noinline)) void seq_ratchet(track_t *t, uint32_t period)
+  * a NOTE step that plays something, x1 (a ratcheted step's parts divide the step: on its start); else 0 */
+ static int32_t seq_nudge(const track_t *t, const step_t *s)
+ {
+-    if (t->p[P_SQNT] || s->time != ST_NOTE || !s->n || step_ratchet(s) != 1u)
++    if (t->p[P_SQNT] || s->time != ST_NOTE || (!s->n && !(t->engine == ENGI_DRUM && s->hit)) || step_ratchet(s) != 1u)
+         return 0;
+     return step_nudge(s);
+ }
+@@ -1133,7 +1156,7 @@ static __attribute__((noinline)) uint32_t seq_time(track_t *t, uint32_t idx, uin
+ {
+     const step_t *s = &seq_steps(t)[idx];
+     uint32_t vel = (s->flags & SF_ACCENT) ? 127u : (s->vel ? s->vel : 96u);
+-    if (s->time != ST_NOTE || !s->n || step_ratchet(s) != 1u)
++    if (s->time != ST_NOTE || (!s->n && !(t->engine == ENGI_DRUM && s->hit)) || step_ratchet(s) != 1u)
+         return 0;
+     return mod_time(t, s->note[0], vel, period);
+ }
+@@ -1162,6 +1185,9 @@ static __attribute__((noinline)) void seq_play(track_t *t, uint32_t idx, uint32_
+             for (i = 0; i < s->n; i++)
+                 if (s->note[i] == t->rskip[k])
+                     skip |= 1u << i;
++            if (t->engine == ENGI_DRUM)
++                for (i = 0; i < DV_NLANE; i++)
++                    if (DRUM_LANE_NOTE[i] == t->rskip[k]) skip |= 1u << (4u + i);
+         }
+         t->rskip_n = 0;
+     }
+diff --git a/firmware/src/ui.c b/firmware/src/ui.c
+index bacaab8..19d95ad 100644
+--- a/firmware/src/ui.c
++++ b/firmware/src/ui.c
+@@ -540,7 +540,7 @@ static void page_entered(void)
+     ui.force = 1;
+ }
+ 
+-static int step_on(const step_t *st) { return st->time == ST_NOTE && st->n; }
++static int step_on(const step_t *st) { return st->time == ST_NOTE && (st->n || st->hit); }
+ /* 1.5.1 (#199): a step whose CHANCE, RATCH or NUDGE is off its default: marked on the roll and the grid (ui_graph.c).
+  * Not VEL: every recorded step has one */
+ static int step_detailed(const step_t *st)
+@@ -636,7 +636,7 @@ static void follow_hold(void)
+ static void follow_poll(void)
+ {
+     uint32_t len = (uint32_t)TSEL->p[P_SLEN], want;
+-    if (!song.playing || ui.home || ui.menu || ui.confirm || cur_page()->graph != GR_ROLL) {
++    if (!song.playing || ui.home || ui.menu || ui.confirm || TSEL->eng_req == ENGI_DRUM || cur_page()->graph != GR_ROLL) {
+         follow.hold = 0;
+         return;
+     }
+@@ -1558,6 +1558,7 @@ static void track_select(uint32_t i)
+ 
+ #include "ui_events.c"                            /* SEQ > AUTOMATION: locks, events, CHANCE, RATCH as a list (an action page) */
+ #include "midi_learn.c"                           /* MIDI LEARN (1.5): GLO + D4, a knob, a CC */
++#include "ui_drum.c"
+ #include "ui_arp.c"                               /* WaveLoop: the ARP pages (SHAYPE's grid: the cursor, the row keys) */
+ 
+ /* ---------------------------------------------------- action pages --- */
+diff --git a/firmware/src/ui_draw.c b/firmware/src/ui_draw.c
+index ae3d27a..1beb921 100644
+--- a/firmware/src/ui_draw.c
++++ b/firmware/src/ui_draw.c
+@@ -1135,6 +1135,20 @@ static void draw_columns(void)
+         }
+         return;
+     }
++    if (drum_grid_on()) {
++        const step_t *st = &TSEL->step[ui.cursor];
++        char bank[8];
++        draw_column(0, "DRUM", drum_lane_name(TSEL, dg_lane()), "", VAL(0u), -1, ICON_AUTO);
++        fmt_int(val, (int32_t)ui.bank + 1);
++        str_cpy(bank, "/", sizeof bank); fmt_int(bank + 1, (TSEL->p[P_SLEN] + 15) / 16);
++        draw_column(1, "PAGE", val, bank, VAL(1u), -1, ICON_AUTO);
++        fmt_int(val, dg.down ? (st->vel ? st->vel : 96) : TSEL->p[P_SLEN]);
++        draw_column(2, dg.down ? "VEL" : "LEN", val, "", VAL(2u), -1, ICON_AUTO);
++        if (dg.down) str_cpy(val, ((st->acc >> dg_lane()) & 1u) || (st->flags & SF_ACCENT) ? "ON" : "OFF", sizeof val);
++        else fmt_int(val, TSEL->p[P_SSWING]);
++        draw_column(3, dg.down ? "ACC" : "SWING", val, "", VAL(3u), -1, ICON_AUTO);
++        return;
++    }
+     if (cur_page()->scope == SC_STEP) {
+         static const char *const TIME_N[3] = {"NOTE", "TIE", "REST"};
+         const step_t *st = &seq_steps(TSEL)[ui.cursor];
+diff --git a/firmware/src/ui_drum.c b/firmware/src/ui_drum.c
+new file mode 100644
+index 0000000..61ac024
+--- /dev/null
++++ b/firmware/src/ui_drum.c
+@@ -0,0 +1,125 @@
++/* SPDX-License-Identifier: GPL-3.0-only */
++/* DRUM's STEP page: 16 white keys are steps; the first eight black keys pick
++ * a kit lane. A held step edits before it toggles, as the SHAYPE grid does.
++ * Storage is the existing FOR4 hit/acc bytes; exact older GM notes stay intact. */
++static const uint8_t DG_WHITE[16] = {0,2,4,6,7,9,11,12,14,16,18,19,21,23,24,26};
++static const uint8_t DG_BLACK[8] = {1,3,5,8,10,13,15,17};
++static struct { uint16_t down, edited; uint8_t bank, lane, track; } dg;
++static int drum_grid_on(void)
++{
++    return !ui.home && !ui.menu && !ui.confirm && !ui.layer && !ui.uboot &&
++           TSEL->eng_req == ENGI_DRUM && cur_page()->graph == GR_ROLL && !detail_on();
++}
++static uint32_t dg_lane(void) { return drum_st[song.sel].focus % DV_NLANE; }
++static int dg_has(const step_t *s, uint32_t lane)
++{
++    uint32_t i;
++    if (s->time != ST_NOTE) return 0;
++    if ((s->hit >> lane) & 1u) return 1;
++    for (i = 0; i < s->n && i < 4u; i++)
++        if (drum_lane(s->note[i]) == lane) return 1;
++    return 0;
++}
++static void dg_remove(step_t *s, uint32_t lane)
++{
++    uint32_t i, n = 0;
++    s->hit &= (uint8_t)~(1u << lane);
++    s->acc &= s->hit;
++    for (i = 0; i < s->n && i < 4u; i++)
++        if (drum_lane(s->note[i]) != lane) s->note[n++] = s->note[i];
++    s->n = (uint8_t)n;
++    if (!s->n && !s->hit) s->time = ST_REST;
++}
++static void dg_add(step_t *s, uint32_t lane)
++{
++    if (s->time != ST_NOTE) s->n = s->hit = s->acc = 0;
++    s->time = ST_NOTE;
++    s->hit |= (uint8_t)(1u << lane);
++}
++static void dg_keys(uint32_t pressed)
++{
++    uint32_t i, held = fm1_in.notes & ~kb_layer, base = ui.bank * 16u, lane = dg_lane();
++    if (chain_busy()) { dg.down = dg.edited = 0; if (pressed) ui_message("STOP TO EDIT"); return; }
++    if (dg.track != song.sel || dg.bank != ui.bank || dg.lane != lane) dg.down = dg.edited = 0;
++    dg.track = song.sel; dg.bank = ui.bank; dg.lane = (uint8_t)lane;
++    for (i = 0; i < 8u; i++)
++        if ((pressed >> DG_BLACK[i]) & 1u) {
++            fm1_irq_off(); drum_focus_set(TSEL, i); fm1_irq_on();
++            dg.down = dg.edited = 0; dg.lane = (uint8_t)i; lane = i;
++            ui.force = 1;
++        }
++    for (i = 0; i < 16u && base + i < (uint32_t)TSEL->p[P_SLEN]; i++) {
++        uint32_t bit = 1u << i;
++        if ((pressed >> DG_WHITE[i]) & 1u) {
++            dg.down |= (uint16_t)bit; dg.edited &= (uint16_t)~bit;
++            cursor_set((int32_t)(base + i)); follow_hold(); ui.force = 1;
++        }
++        if ((dg.down & bit) && !((held >> DG_WHITE[i]) & 1u)) {
++            if (!(dg.edited & bit)) {
++                step_t *s = &TSEL->step[base + i];
++                step_undo_take(TSEL, 0);
++                fm1_irq_off();
++                if (dg_has(s, lane)) dg_remove(s, lane); else dg_add(s, lane);
++                TSEL->seq_active = 1;
++                fm1_irq_on(); motion_undo_done(TSEL);
++            }
++            dg.down &= (uint16_t)~bit; dg.edited &= (uint16_t)~bit; ui.force = 1;
++        }
++    }
++}
++static void dg_turn(uint32_t slot, int32_t steps)
++{
++    track_t *t = TSEL;
++    uint32_t i, lane = dg_lane();
++    if (chain_busy()) { ui_message("STOP TO EDIT"); return; }
++    if (dg.down) {
++        if (slot < 2u) return;                      /* keep the held steps on their lane and page */
++        step_undo_take(t, 0x8000u | slot);
++        fm1_irq_off();
++        for (i = 0; i < 16u; i++) if ((dg.down >> i) & 1u) {
++            step_t *s = &t->step[dg.bank * 16u + i];
++            /* Keep exact GM variants (909 crash/toms); new hits use the lane's own note. */
++            if (!dg_has(s, lane)) dg_add(s, lane);
++            if (slot == 2u) s->vel = (uint8_t)clamp((s->vel ? s->vel : 96) + steps, 1, 127);
++            else {
++                uint32_t j;
++                /* An accent is a lane bit. Canonicalise this lane only when explicitly editing its accent. */
++                for (j = 0; j < s->n; j++) if (drum_lane(s->note[j]) == lane) break;
++                if (j < s->n) { /* legacy steps share velocity/accent; retain their exact pitches */
++                    if (steps > 0) s->flags |= SF_ACCENT; else s->flags &= (uint8_t)~SF_ACCENT;
++                } else if (steps > 0) s->acc |= (uint8_t)(1u << lane);
++                else s->acc &= (uint8_t)~(1u << lane);
++            }
++        }
++        dg.edited |= dg.down; t->seq_active = 1;
++        fm1_irq_on(); motion_undo_done(t);
++    } else if (slot == 0u) {
++        fm1_irq_off(); drum_focus_set(t, (uint32_t)clamp((int32_t)lane + steps, 0, 7)); fm1_irq_on();
++    } else if (slot == 1u) {
++        uint32_t bank = (uint32_t)clamp((int32_t)ui.bank + steps, 0, (t->p[P_SLEN] - 1) / 16);
++        cursor_set((int32_t)(bank * 16u));
++    } else {
++        uint32_t id = slot == 2u ? P_SLEN : P_SSWING;
++        step_undo_take(t, 0x8100u | slot);
++        t->p[id] = (int16_t)clamp(t->p[id] + steps, TP[id].min, TP[id].max);
++        if (ui.cursor >= (uint32_t)t->p[P_SLEN]) cursor_set(t->p[P_SLEN] - 1);
++        motion_undo_done(t);
++    }
++    follow_hold(); ui.force = 1;
++}
++static void dg_clear(void)
++{
++    if (chain_busy()) { ui_message("STOP TO EDIT"); return; }
++    step_undo_take(TSEL, 0);
++    fm1_irq_off(); dg_remove(&TSEL->step[ui.cursor], dg_lane()); fm1_irq_on();
++    dg.edited |= dg.down;
++    motion_undo_done(TSEL); ui.force = 1; ui_message("HIT CLEARED");
++}
++static uint32_t dg_leds(void)
++{
++    uint32_t i, m = 1u << DG_BLACK[dg_lane()], base = ui.bank * 16u;
++    for (i = 0; i < 16u && base + i < (uint32_t)TSEL->p[P_SLEN]; i++)
++        if (dg_has(&seq_steps(TSEL)[base + i], dg_lane()) || ((dg.down >> i) & 1u) ||
++            (song.playing && TSEL->seq_idx == base + i)) m |= 1u << DG_WHITE[i];
++    return m;
++}
+diff --git a/firmware/src/ui_graph.c b/firmware/src/ui_graph.c
+index 83deff1..a743d54 100644
+--- a/firmware/src/ui_graph.c
++++ b/firmware/src/ui_graph.c
+@@ -254,6 +254,33 @@ static void graph_roll(const track_t *t, uint16_t c)
+         }
+     }
+ }
++/* DRUM grid: kit names, eight lanes, sixteen keys/steps. */
++static void graph_drum(const track_t *t, uint16_t c)
++{
++    uint32_t lane, i, base = ui.bank * 16u, len = (uint32_t)t->p[P_SLEN];
++    for (lane = 0; lane < DV_NLANE; lane++) {
++        int32_t y = 5 + (int32_t)lane * 12;
++        uint16_t lc = lane == dg_lane() ? T_ACCENT : T_DIM;
++        cv_text_fit(6, y, &AF_S, drum_lane_name(t, lane), lc, T_BG, 42);
++        if (lane == dg_lane()) cv_rect(49, y, 177, 11, T_LANE);
++        for (i = 0; i < 16u && base + i < len; i++) {
++            const step_t *st = &seq_steps(t)[base + i];
++            int32_t x = 50 + (int32_t)i * 11;
++            uint16_t col = (st->flags & SF_ACCENT) || ((st->acc >> lane) & 1u) ? T_TEXT : c;
++            if (dg_has(st, lane)) cv_rect(x + 2, y + 2, 7, 7, lane == dg_lane() ? T_ACCENT : col);
++            else cv_rect(x + 5, y + 5, 1, 1, T_DIM);
++            if (!(i & 3u)) cv_rect(x, y, 1, 11, T_RAISE);
++        }
++    }
++    if (ui.cursor / 16u == ui.bank) {
++        int32_t x = 50 + (int32_t)(ui.cursor % 16u) * 11;
++        cv_rect(x, 3, 10, 1, T_ACCENT);
++        cv_rect(x, 102, 10, 1, T_ACCENT);
++    }
++    if (song.playing && t->seq_idx / 16u == ui.bank)
++        cv_rect(50 + (int32_t)(t->seq_idx % 16u) * 11, 4, 1, 96, T_TEXT);
++}
++
+ /* WaveLoop: the ARP pages' grid (ui_arp.c): SHAYPE's pattern of the track, steps across (the cursor's 16; 8 or fewer twice as wide), rows up (row
+  * 1 at the bottom, the lowest held note's place). A note is a bar over its steps (its start a notch brighter); the
+  * cursor step framed, the step the arp plays a line with its notes lit; the beats' lines brighter. On the left a key per
+@@ -834,7 +861,9 @@ static uint32_t graph_signature(void)
+         }
+         if (detail_on())                             /* DETAIL: QUANTIZE (NUDGE's DIM), the lane named in the accent */
+             h = (h ^ (0xD1u + (uint32_t)t->p[P_SQNT] * 31u + (ui.hot_t ? ui.hot_col + 1u : 0u) * 977u)) * 2654435761u;
+-        else {                                       /* the roll: its view and the keys held */
++        else if (t->eng_req == ENGI_DRUM) {
++            h = (h ^ dg_lane() ^ ((uint32_t)t->p[P_E0] << 8) ^ dg.down) * 16777619u;
++        } else {                                       /* the roll: its view and the keys held */
+             pr_follow(t);
+             h = (h ^ (proll.lo + 1u)) * 16777619u;
+             h = (h ^ pr_held()) * 16777619u;
+@@ -1713,6 +1742,8 @@ static void draw_graph(void)
+             cv_oy = 0;
+             if (detail_on())                          /* 1.5.1 (#199) */
+                 graph_detail(t, c);
++            else if (t->eng_req == ENGI_DRUM)
++                graph_drum(t, c);
+             else
+                 graph_roll(t, c);
+             break;
+diff --git a/firmware/src/ui_help.c b/firmware/src/ui_help.c
+index ee90a55..f732b9a 100644
+--- a/firmware/src/ui_help.c
++++ b/firmware/src/ui_help.c
+@@ -63,6 +63,7 @@ static const char *help_page(void)
+ {
+     uint32_t i;
+     const char *t;
++    if (drum_grid_on()) return "[KEYS]STEPS[K1]DRUM[K2]PAGE";
+     if (ui.home)
+         return H_HOME;
+     t = cur_page()->title;
+diff --git a/firmware/src/ui_input.c b/firmware/src/ui_input.c
+index 3772389..1c85a5d 100644
+--- a/firmware/src/ui_input.c
++++ b/firmware/src/ui_input.c
+@@ -184,8 +184,8 @@ static uint32_t midi_leds(const track_t *t)
+ static uint32_t play_leds(void)
+ {
+     const track_t *t = TSEL;
+-    uint8_t s[4 + ARP_SND];
+-    uint32_t n = t->seq_arp ? 0u : t->seq_n < 4u ? t->seq_n : 4u, i, k, note, used = 0, m = 0, hit;   /* (WaveLoop: */
++    uint8_t s[12 + ARP_SND];
++    uint32_t n = t->seq_arp ? 0u : t->seq_n < 12u ? t->seq_n : 12u, i, k, note, used = 0, m = 0, hit;   /* (WaveLoop: */
+     uint32_t a = t->arp_n < ARP_SND ? t->arp_n : ARP_SND;                 /* the arp's chord sounds none of its own) */
+     for (i = 0; i < n; i++)
+         s[i] = t->seq_notes[i];
+@@ -233,7 +233,7 @@ static uint32_t step_leds(void)
+  * notes playing, over the idle glow */
+ static int keys_own(void)
+ {
+-    return (name_on() && !ui.menu) || ui.layer;
++    return (name_on() && !ui.menu) || ui.layer || drum_grid_on();
+ }
+ 
+ /* Discussion #127 (1.2): MENU > SCALE LEDS ON, the keys of the selected track's scale (ROOT, SCALE), bit k = key k, as
+@@ -297,7 +297,7 @@ static uint32_t key_leds(uint32_t *br)                 /* (*br: a layer's keys t
+     uint32_t c;
+     if (br)
+         *br = 0;
+-    c = name_on() && !ui.menu ? name_leds() : ui.layer ? layer_leds(br) :
++    c = name_on() && !ui.menu ? name_leds() : ui.layer ? layer_leds(br) : drum_grid_on() ? dg_leds() :
+         arp_keys_on() ? (((fm1_in.notes & ~kb_layer) | play_leds()) & ~ARP_KEYS) | arp_leds() | op_leds(br) :   /* (ui_arp.c) */
+                  (fm1_in.notes & ~kb_layer) | play_leds() | step_leds() | (song_keys_on() ? song_leds() : 0u);
+     return c;
+@@ -603,7 +603,7 @@ static uint64_t lock_held(void)
+     const track_t *t = TSEL;
+     uint32_t len = (uint32_t)t->p[P_SLEN], keys = fm1_in.notes & ~kb_layer;
+     if (ui.home || ui.menu || ui.confirm || ui.layer || name_on() || !song.seq_mode || cur_page()->graph != GR_ROLL ||
+-        !keys || detail_on())                           /* (DETAIL: its knobs are the step's own fields, sd_turn) */
++        !keys || detail_on() || drum_grid_on())                           /* (DETAIL: its knobs are the step's own fields, sd_turn) */
+         return 0;
+     return ui.entry_open && !live_rec_sel() && ui.cursor < len ? (uint64_t)1 << ui.cursor : 0u;
+ }
+@@ -741,6 +741,7 @@ static void step_edit(uint32_t slot, int32_t steps)
+ {
+     step_t *st = &TSEL->step[ui.cursor];
+     uint32_t i;
++    if (drum_grid_on()) { dg_turn(slot, steps); return; }
+     if (detail_on()) {                                    /* DETAIL (1.5.1): CHANCE RATCH NUDGE VEL */
+         follow_hold();
+         sd_turn(slot, steps);
+@@ -1244,6 +1245,7 @@ static void layer_lock_input(uint32_t pressed);
+ static int page_tap(uint32_t b)
+ {
+     uint32_t f;
++    if (b == B_EDIT && drum_grid_on()) { dg_clear(); return 1; }
+     if (b == B_EDIT && detail_on()) {                    /* DETAIL (1.5.1): the step's CHANCE RATCH NUDGE VEL back */
+         if (chain_busy())
+             ui_message("STOP TO EDIT");
+@@ -1307,7 +1309,7 @@ static void midi_take(void)
+ /* an edit of the selected track in progress: a step held for a lock, a step being entered on the roll, a dialog */
+ static int mf_busy(void)
+ {
+-    return lock_held() || (ui.entry_open && (fm1_in.notes & ~kb_layer)) || ui.confirm;
++    return (drum_grid_on() && dg.down) || lock_held() || (ui.entry_open && (fm1_in.notes & ~kb_layer)) || ui.confirm;
+ }
+ static int midi_follow(void)
+ {
+@@ -1656,7 +1658,10 @@ static void ui_input(void)
+     song.grid = (uint8_t)keys_mode();                 /* (seq.c: what the keys are) */
+     if (song.grid != 4u)
+         ui.arp.down = ui.arp.made = ui.arp.moved = 0;   /* (WaveLoop: not on an ARP page, no row key is held for it) */
+-    if (song.grid == 3u) {
++    if (song.grid != 5u) dg.down = dg.edited = 0;
++    if (song.grid == 5u) {
++        dg_keys(notes);
++    } else if (song.grid == 3u) {
+         song_keys(notes);
+     } else if (song.grid == 4u) {                       /* WaveLoop: an ARP page, the row keys (ui_arp.c) */
+         arp_keys(notes);
+diff --git a/firmware/src/ui_name.c b/firmware/src/ui_name.c
+index c116472..e7d4299 100644
+--- a/firmware/src/ui_name.c
++++ b/firmware/src/ui_name.c
+@@ -59,7 +59,7 @@ static void name_close(void)
+ }
+ /* the keys: 2 = NAME's (silent), 3 = SONG's A..D (ui.c song_keys_on), 4 = the ARP pages' row keys (ui_arp.c), 0 = notes
+  * (seq.c keyboard_block reads song.grid) */
+-static uint32_t keys_mode(void) { return name_on() ? 2u : song_keys_on() ? 3u : arp_keys_on() ? 4u : 0u; }
++static uint32_t keys_mode(void) { return name_on() ? 2u : song_keys_on() ? 3u : arp_keys_on() ? 4u : drum_grid_on() ? 5u : 0u; }
+ 
+ static const char *nm_group(uint32_t p)                /* white key place p's characters */
+ {
+diff --git a/tests/drum_seq_test.c b/tests/drum_seq_test.c
+new file mode 100644
+index 0000000..e300fb4
+--- /dev/null
++++ b/tests/drum_seq_test.c
+@@ -0,0 +1,91 @@
++/* SPDX-License-Identifier: GPL-3.0-only */
++/* Real panel, sequencer and FOR4 paths: lane editing, overdubbing, gates and storage. */
++#define UI_TEST_NO_MAIN 1
++#include "ui_test.c"
++#define REQUIRE(x) do { if (!(x)) { fprintf(stderr, "drum seq: line %d: %s\n", __LINE__, #x); return 1; } count++; } while (0)
++int main(void)
++{
++    uint32_t count = 0, i, n;
++    static project_t p, q;
++    static project_store_t wire;
++    ui_power_on(); song.sel = 3; set_engine_of(TSEL, ENGI_DRUM); frame();
++    track_t *t = TSEL;
++    track_defaults_steps(t); t->p[P_SLEN] = 64; t->p[P_SDIV] = 2;
++    go_page(GR_ROLL); frame();
++    REQUIRE(drum_grid_on() && song.grid == 5u);
++    for (i = 0; i < 8u; i++) { tap_key(DG_BLACK[i]); tap_key(DG_WHITE[0]); }
++    REQUIRE(t->step[0].hit == 255 && t->step[0].n == 0);
++    REQUIRE(dg_lane() == 7);
++    n = vage;
++    keyboard_block();
++    REQUIRE(vage == n);                         /* panel steps never audition/record pitches */
++    seq_step(t, &t->step[0], 0, div_samples(2), 0);
++    REQUIRE(t->seq_n == 8 && vage - n == 8);
++    seq_release(t); REQUIRE(t->seq_n == 0);
++    tap_key(DG_BLACK[0]); tap_key(DG_WHITE[0]);
++    REQUIRE(t->step[0].hit == 254);             /* remove only the kick */
++    tap_key(DG_WHITE[0]);
++    key_down(DG_WHITE[0]); frame(); REQUIRE(mf_busy()); dg_turn(3, 1); key_up(DG_WHITE[0]); frame();
++    REQUIRE(t->step[0].hit == 255 && t->step[0].acc == 1);
++    key_down(DG_WHITE[0]); frame(); dg_turn(2, -20); key_up(DG_WHITE[0]); frame();
++    REQUIRE(t->step[0].hit == 255 && t->step[0].vel == 76);
++    dg_turn(1, 3); tap_key(DG_WHITE[15]);
++    REQUIRE(ui.bank == 3 && ui.cursor == 63 && t->step[63].hit == 1);
++    dg_turn(2, -47); REQUIRE(t->p[P_SLEN] == 17 && ui.bank == 1 && ui.cursor == 16);
++    t->step[16].n = 2; t->step[16].note[0] = 49; t->step[16].note[1] = 38; t->step[16].time = ST_NOTE;
++    tap_key(DG_BLACK[7]); tap_key(DG_WHITE[0]);
++    REQUIRE(t->step[16].n == 1 && t->step[16].note[0] == 38); /* old crash removes only BELL */
++    t->p[P_E0] = DK_909;
++    project_capture(&p);
++    REQUIRE(proj_pack(&wire, &p) && proj_import(&q, &wire, sizeof wire));
++    REQUIRE(q.t[3].step[0].hit == 255 && q.t[3].step[0].acc == 1 && q.t[3].step[0].vel == 76);
++    REQUIRE(project_restore_runtime(&q) == 0 && trk[3].step[0].hit == 255);
++    t = &trk[3];
++    /* Old note-only FOR4s round trip and play identically. */
++    track_defaults_steps(t); t->p[P_SLEN] = 16; t->p[P_SDIV] = 2; t->p[P_AMODE] = 0;
++    t->step[0] = (step_t){{36,38,49,48},4,ST_NOTE,0,90};
++    project_capture(&p); REQUIRE(proj_pack(&wire,&p) && proj_import(&q,&wire,sizeof wire));
++    REQUIRE(q.t[3].step[0].n == 4 && !q.t[3].step[0].hit && q.t[3].step[0].note[2] == 49);
++    n = vage; seq_step(t,&t->step[0],0,div_samples(2),0); REQUIRE(vage - n == 4); seq_release(t);
++    /* Canonical note plus mask cannot retrigger twice. */
++    t->step[0].hit = 1; n = vage; seq_step(t,&t->step[0],0,div_samples(2),0);
++    REQUIRE(vage - n == 4); seq_release(t);
++    /* Eight pads overdub the same quantised step; holding them creates no ties. */
++    track_defaults_steps(t); t->p[P_SLEN] = 16; t->p[P_SDIV] = 2;
++    t->seq_idx = 0; t->seq_pos = 0; t->rh_n = 0;
++    for (i = 0; i < 8u; i++) rec_note(t,DRUM_LANE_NOTE[i],i == 0 ? 127 : 85);
++    REQUIRE(t->step[0].hit == 255 && t->step[0].acc == 1 && t->rh_n == 0);
++    REQUIRE(!(t->step[0].flags & SF_ACCENT) && t->step[0].vel == 85);
++    rec_hold(t,1,16); REQUIRE(t->step[1].time != ST_TIE);
++    /* Failed chance, ratchets and gates use the normal transport. */
++    step_set_chance(&t->step[0],0); n = vage;
++    seq_step(t,&t->step[0],0,div_samples(2),0); REQUIRE(vage == n);
++    step_set_chance(&t->step[0],100); step_set_ratchet(&t->step[0],4);
++    seq_step(t,&t->step[0],0,div_samples(2),0); REQUIRE(t->rat_left == 3 && t->seq_n == 8);
++    seq_stop(); REQUIRE(t->seq_n == 0);
++    /* Transport loops the full mask, with one trigger per beat and no UI-focus theft. */
++    track_defaults_steps(t); t->p[P_SLEN] = 16; t->p[P_SDIV] = 2; t->p[P_SSWING] = 0;
++    t->p[P_SQNT] = 1; t->p[P_SGATE] = 64;
++    for (i = 0; i < 16; i++) { t->step[i].time = ST_NOTE; t->step[i].hit = 3; }
++    song.rec = 0;
++    seq_start(); n = vage;
++    for (i = 0; i < 16u * div_samples(2) / CTL; i++) seq_tick(t,CTL);
++    REQUIRE(vage - n == 32); seq_stop();
++    /* Notes overdubbed ahead of the playhead are not hit again when it catches up. */
++    track_defaults_steps(t); t->p[P_SLEN] = 16; t->p[P_SDIV] = 2;
++    t->seq_idx = 0; t->seq_pos = div_samples(2) * 3u / 4u;
++    t->nd_fired = t->nd_late = t->rskip_n = 0;
++    for (i = 0; i < 8; i++) rec_note(t,DRUM_LANE_NOTE[i],90);
++    REQUIRE(t->step[1].hit == 255 && t->rskip_n == 8);
++    n = vage; seq_play(t,1,div_samples(2)); REQUIRE(vage == n && !t->rskip_n);
++    seq_play(t,1,div_samples(2)); REQUIRE(vage - n == 8); seq_release(t);
++    /* Failed lanes do not destroy another lane's probability/ratchet on a re-toggle. */
++    step_set_chance(&t->step[0], 50); dg_add(&t->step[0],0); dg_remove(&t->step[0],0); dg_add(&t->step[0],0);
++    REQUIRE(step_chance(&t->step[0]) == 50);
++    /* A changed drum bank does not replace the rhythm. */
++    n = t->step[0].hit; apply_preset_to(t, DK_CR78); REQUIRE(t->step[0].hit == n);
++    /* Synth STEP is still the piano roll with ordinary step entry. */
++    song.sel = 0; go_page(GR_ROLL); frame(); REQUIRE(!drum_grid_on() && song.grid == 0);
++    printf("drum sequencer: %u checks passed\n",count);
++    return 0;
++}
+diff --git a/tests/midi_control_test.c b/tests/midi_control_test.c
+index a34d6f4..417de07 100644
+--- a/tests/midi_control_test.c
++++ b/tests/midi_control_test.c
+@@ -566,6 +566,7 @@ static int follow_test(void)
+     {   /* a step held for a lock (step recording on SEQ > STEP): the selection stays until it is let go */
+         track_t *t4 = &trk[3];
+         uint32_t k4;
++        set_engine_of(t4, ENGI_WAVE); frame(); /* this test exercises melodic step-entry locks */
+         menu_put(MI_MFOLLOW, 1);
+         song.sel = 3;
+         track_defaults_steps(t4);
+diff --git a/tests/run_tests.sh b/tests/run_tests.sh
+index 84bb5e6..9e3d2cd 100755
+--- a/tests/run_tests.sh
++++ b/tests/run_tests.sh
+@@ -372,6 +372,8 @@ if [ -f build/gen/felucca_tables.h ]; then
+     run "VOID instrumented: no table read out of range on a TYPE switch, no int32 overflow at the corners (VOWEL, LP24, WARP)" "$OUT/void_instr"
+     $CC -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/four_test" tests/four_test.c -lm && "$OUT/four_test" || fail=1
+     echo "== DRUM (WaveLoop): every kit's drums, the GM map and the keys, each drum its own, PAN / SEND, no ARP, the voice pool"
++    $CC -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/drum_seq_test" tests/drum_seq_test.c -lm
++    run "DRUM sequencer: panel, layers, overdub, transport and FOR4 compatibility" "$OUT/drum_seq_test"
+     $CC -O2 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/drum_test" tests/drum_test.c -lm && "$OUT/drum_test" || fail=1
+     $CC -O1 -w -Ibuild/gen -Ifirmware/src -Itests -o "$OUT/obx_test" tests/obx_test.c -lm
+     run "OB-Z: MODE 0 the legacy low-pass bit for bit, the LP / NOTCH / HP / BP morph, the 4-pole, SLOP, DTN" "$OUT/obx_test"
+diff --git a/tests/ui_render.c b/tests/ui_render.c
+index 623eb26..51840f3 100644
+--- a/tests/ui_render.c
++++ b/tests/ui_render.c
+@@ -2066,6 +2066,28 @@ int main(int argc, char **argv)
+         fprintf(rep, "(self-test: %u findings above are expected)\n\n", nfind);
+         nfind = 0;
+     }
++    {   /* WaveLoop's DRUM sequencer: the actual firmware drawing, including held-hit cards. */
++        uint32_t kit, large, held, i;
++        for (kit = 0; kit < 3; kit++) for (large = 0; large < 2; large++) for (held = 0; held < 2; held++) {
++            char name[64];
++            snprintf(name, sizeof name, "drum_grid_%u_%u_%u", kit, large, held);
++            cur_name = name;
++            setup(S_STEP); eng(ENGI_DRUM); machine_mode();
++            TSEL->p[P_E0] = kit;
++            track_defaults_steps(TSEL); TSEL->p[P_SLEN] = 64;
++            for (i = 0; i < 16; i++) {
++                TSEL->step[i].time = ST_NOTE;
++                TSEL->step[i].hit = (uint8_t)(8u | (!(i % 4u) ? 1u : 0u) | (i % 8u == 4u ? 6u : 0u));
++                TSEL->step[i].acc = !(i % 4u) ? 1u : 0u;
++            }
++            drum_focus_set(TSEL, DV_SNARE);
++            ui.cursor = 4; ui.bank = 0; song.playing = 1; TSEL->seq_idx = 6;
++            dg.down = held ? 1u << 4 : 0u;
++            if (large) ui_prefs |= PREF_LARGE; else ui_prefs &= ~PREF_LARGE;
++            draw(S_STEP); lint(); write_ppm(out, "DRUM", name);
++            dg.down = 0;
++        }
++    }
+     {   /* the machines' palettes and trims (the one colour scheme): every screen with the selected track set to each machine
+          * (its palette and trim), then in MACHINE mode as each screen sets its own track. HOME and EDIT of each machine: OUTDIR/ppm/<MACHINE>_<screen>.ppm. 0 lint findings,
+          * and no trim under a text, icon or card (hk_trim) */

@@ -1,0 +1,515 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-10-28",
+  "meaning": "Pinned source-path inventory, not a compatibility certification.",
+  "distros": [
+    {
+      "id": "switchblade",
+      "repository": "https://github.com/ELI7VH/switchblade",
+      "commit": "5d570beea20c020f00de51b3188baccb2384663e",
+      "status": "Reference implementation for all four features. Sequencer patch supplied; listening acceptance remains outstanding.",
+      "seams": {
+        "shape": [
+          "firmware/src/arp_shape.c",
+          "firmware/src/core.h",
+          "firmware/src/seq.c",
+          "firmware/src/ui_arp.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/setlist.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_drum.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "melodee",
+      "repository": "https://github.com/ELI7VH/melodee",
+      "commit": "aaaf5e4a5f78f2c3dfdcf5d6ae2e44eb99a5ef72",
+      "status": "Existing persistent songs and modified drums donor. SHAYPE and drum-grid editor require porting.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/resume_sounds.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_control.c",
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/pattern.c",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "jiant",
+      "repository": "https://github.com/juanjiant-bit/JIANT",
+      "commit": "61a132e3eae15ed3d7819a9e2d7c86f3069b7a22",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/song_main.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "sloop-fm1",
+      "repository": "https://github.com/ELI7VH/sloop-fm1",
+      "commit": "19bdaa7f55db9de2fbbafb7b457c002569c53383",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "felucca-kit",
+      "repository": "https://github.com/ELI7VH/Felucca",
+      "commit": "8e5c90b3a192712efc699559334c896a892442c2",
+      "status": "Existing SHAYPE, persistent setlist and modified drums donor. Drum-grid editor requires porting.",
+      "seams": {
+        "shape": [
+          "firmware/src/arp_shape.c",
+          "firmware/src/core.h",
+          "firmware/src/seq.c",
+          "firmware/src/ui_arp.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/setlist.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_control.c",
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "felucca-stock",
+      "repository": "https://github.com/hugelton/Felucca",
+      "commit": "63f88ec18b71c6ed4371d03d6f04dd93f4193ad3",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "FM1-MOVE",
+      "repository": "https://github.com/Nicodesy06/FM1-MOVE",
+      "commit": "42fc1af2a2ab6174331d2a4953f7628d6f11b7f8",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "NoteSorcery",
+      "repository": "https://github.com/catacombius/NoteSorcery",
+      "commit": "73d6cdd6d2a006fad9df4f2227757b8131fe6ef6",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/voice.c",
+          "firmware/src/x0x/drum808.c",
+          "firmware/src/x0x/drum808.h"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "analogBEAST",
+      "repository": "https://github.com/dzwerg/analogBEAST",
+      "commit": "8bbee0c6b15ca4fca5cc50bddd581e738886558f",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "estampie",
+      "repository": "https://github.com/ocean/estampie",
+      "commit": "a5eb02a96b3fa9303bce0772315f9467382aa57c",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "fm1-dub",
+      "repository": "https://github.com/sbegueria/fm1-dub",
+      "commit": "e6fe7b8f8f3114019bb36b5b536ad458eacd2c2d",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [],
+        "persistent_songs": [
+          "firmware/src/app/project.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [],
+        "drum_sequencer": [
+          "firmware/src/app/project.c",
+          "firmware/src/app/ui.c"
+        ]
+      }
+    },
+    {
+      "id": "fm1-tribe",
+      "repository": "https://github.com/apiel/fm1-tribe",
+      "commit": "32c51f1591dade6ebf3b0c7880fda7046b10197b",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/app/engine.h",
+          "firmware/src/seq/sequencer.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/app/project.c",
+          "firmware/src/storage.c",
+          "firmware/src/tribe/project.c"
+        ],
+        "drums_808": [
+          "firmware/src/app/engine.h",
+          "firmware/src/dsp/drum808.c",
+          "firmware/src/dsp/drum808.h"
+        ],
+        "drum_sequencer": [
+          "firmware/src/app/project.c",
+          "firmware/src/app/ui.c",
+          "firmware/src/seq/pattern.c",
+          "firmware/src/seq/pattern.h",
+          "firmware/src/seq/sequencer.c",
+          "firmware/src/tribe/project.c",
+          "firmware/src/tribe/ui.c"
+        ]
+      }
+    },
+    {
+      "id": "fm1-x0x",
+      "repository": "https://github.com/charlesvestal/fm1-x0x",
+      "commit": "54194c54bb01e9d9b3fe9d641b3ddfa512ac04a3",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/app/engine.h",
+          "firmware/src/seq/sequencer.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/app/project.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/app/engine.h",
+          "firmware/src/dsp/drum808.c",
+          "firmware/src/dsp/drum808.h"
+        ],
+        "drum_sequencer": [
+          "firmware/src/app/project.c",
+          "firmware/src/app/ui.c",
+          "firmware/src/seq/pattern.c",
+          "firmware/src/seq/pattern.h",
+          "firmware/src/seq/sequencer.c"
+        ]
+      }
+    },
+    {
+      "id": "ghoulbox-fm1-dungeon-synth",
+      "repository": "https://github.com/jasonpersinger/ghoulbox-fm1-dungeon-synth",
+      "commit": "f23fbc593f8af29dfa01174278f08ee79155ed27",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "hortator",
+      "repository": "https://github.com/DeadActive/hortator",
+      "commit": "2d7a0b19f5c3fd5d23bec6d4e91f6038d46d1a70",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/song.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "orbit",
+      "repository": "https://github.com/dspaudio/orbit",
+      "commit": "c07bd1d87dcb1e90180d1765d96b834c3dc68479",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "pigeon",
+      "repository": "https://github.com/TheShrimpBlimp/pigeon",
+      "commit": "b18b4cbcbdbbfc935277d7d557659c98eb9cd830",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/song_chain.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    },
+    {
+      "id": "skiff",
+      "repository": "https://github.com/illuminus5/skiff",
+      "commit": "c01fa1ed619266d770ea6552b153612e1b77d0a9",
+      "status": "Source paths inspected; all four integrations require adaptation and target testing.",
+      "seams": {
+        "shape": [
+          "firmware/src/core.h",
+          "firmware/src/seq.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/project.c",
+          "firmware/src/storage.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/voice.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/core.h",
+          "firmware/src/project.c",
+          "firmware/src/seq.c",
+          "firmware/src/ui.c",
+          "firmware/src/ui_input.c"
+        ]
+      }
+    }
+  ]
+}

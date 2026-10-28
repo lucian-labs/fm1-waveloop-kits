@@ -1,0 +1,49 @@
+# FM-1 WaveLoop Kits
+
+Port **SHAYPE**, **persistent songs**, **WaveLoop’s modified 808 drums**, and the **kit-lane drum sequencer** into FM-1 source firmware.
+
+By Elijah Lucian / Lucian Labs, building on the credited firmware authors below.
+
+## Start here
+
+1. Pick your [distro map](#distro-maps).
+2. Follow the feature recipe and [porting checklist](PORTING.md).
+3. Run `python3 tools/check.py` to verify the bundled SHAYPE core and kit integrity.
+
+| Feature | Included | Guide |
+| --- | --- | --- |
+| SHAYPE / Shape Arp | Portable C core and parity fixtures | [Shape](kits/shape/README.md) |
+| Persistent songs | Autosave/resume contract and donor paths | [Songs](kits/persistent_songs/README.md) |
+| Modified 808 drums | Voice, controls and bank integration recipe | [808](kits/drums_808/README.md) |
+| Drum sequencer | Exact-base Switch Blade patch and adaptation recipe | [Sequencer](kits/drum_sequencer/README.md) |
+
+This is a source porting kit, not a universal firmware installer. Switch Blade is the reference implementation; other rows state what is present and what still needs porting. Shared hardware does not make project formats or flash layouts interchangeable.
+
+## Distro maps
+
+- [switchblade](distros/switchblade.md)
+- [melodee](distros/melodee.md)
+- [jiant](distros/jiant.md)
+- [sloop-fm1](distros/sloop-fm1.md)
+- [felucca-kit](distros/felucca-kit.md)
+- [felucca-stock](distros/felucca-stock.md)
+- [FM1-MOVE](distros/FM1-MOVE.md)
+- [NoteSorcery](distros/NoteSorcery.md)
+- [analogBEAST](distros/analogBEAST.md)
+- [estampie](distros/estampie.md)
+- [fm1-dub](distros/fm1-dub.md)
+- [fm1-tribe](distros/fm1-tribe.md)
+- [fm1-x0x](distros/fm1-x0x.md)
+- [ghoulbox-fm1-dungeon-synth](distros/ghoulbox-fm1-dungeon-synth.md)
+- [hortator](distros/hortator.md)
+- [orbit](distros/orbit.md)
+- [pigeon](distros/pigeon.md)
+- [skiff](distros/skiff.md)
+
+Other source distros: use the [generic integration contract](PORTING.md). No exact map is claimed yet for Prysm, april-os, mc-1, unibox, zp12, fm1-base or fm1_open. Closed vendor firmware requires an available, appropriately licensed source/build path; this kit cannot patch an opaque binary.
+
+## Credits and license
+
+Read [CREDITS.md](CREDITS.md) before reusing code. Bundled source, fixtures and patch are GPL-3.0-only; original notices remain intact. This kit includes no firmware binaries, device backups, SDK blobs or sample packs. Linked optional dependencies retain their own licenses.
+
+Pinned source revisions and hashes live in [provenance.json](provenance.json); exact distro paths live in [manifest.json](distros/manifest.json).
