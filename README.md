@@ -48,7 +48,7 @@ Other source distros: use the [generic integration contract](PORTING.md). No exa
 
 Use [Arturia MiniLab CLI](https://github.com/ELI7VH/arturia-minilab-cli) to back up,
 compare and upload MiniLab 3 User presets without MIDI Control Center. Uploads
-back up the target slot automatically and verify all319 mapping fields.
+back up the target slot automatically and verify all 319 mapping fields.
 
 Follow its setup instructions, then upload your native `.minilab3` file:
 
@@ -60,7 +60,7 @@ Choose your intended User slot (1–5). The
 [fm1-sb-live preset](https://github.com/ELI7VH/switchblade/blob/2bd136d/controllers/fm1-sb-live.minilab3)
 maps K1–4 to ADSR and K5–8 to repeat, dirt, delay and filter on the matching
 WaveLoop Switch Blade build. Other distros need matching MIDI assignments.
-The CLI is tested with MiniLab 3 firmware1.2.0.69, including restart persistence;
+The CLI is tested with MiniLab 3 firmware 1.2.0.69, including restart persistence;
 it programs controller mappings and does not install FM-1 firmware.
 
 ## Credits and license
