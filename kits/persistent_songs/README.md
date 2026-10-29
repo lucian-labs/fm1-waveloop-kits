@@ -20,3 +20,7 @@ The current song is a living document: edits autosave when stopped and idle, lea
 Switch Blade’s twelve songs use `0xA0000..0xB7FFF`, retired sample storage in that particular fork. **Never copy those addresses into a sampler distro.** Melodee uses four existing project slots A–D. JIANT/SLOOP have native song concepts that must be preserved or explicitly migrated.
 
 Credit: Elijah Lucian / Lucian Labs’ persistent-song workflow and integration, built on the host firmware’s project/storage system. SLOOP’s native song architecture is by isod89; JIANT credits its use. This is not a claim that every host’s song system originated in WaveLoop.
+
+## Current Switch Blade gesture
+
+[Switch Blade 47ba86f](https://github.com/ELI7VH/switchblade/blob/47ba86f1b36d8f2e10f9eb6252acca7143c3c9b3/docs/GLOBAL-SONGS.md) uses physical GLOBAL + OCT−/OCT+ for previous/next and GLOBAL + held OCT+ (0.7 s) for one copy. Plain HOME OCT changes pitch. The routing is in `ui_layer.c` (`song_oct`) and `ui_input.c`; it captures the gesture before layer UNDO, ARP shifts and pitch handling. Early modifier release cancels without leaking a pitch edit. Map equivalent host modifiers when porting; storage/scheduler behavior stays with the host. These newer gesture references do not change the older donor pins above.
