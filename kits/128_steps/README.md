@@ -2,6 +2,12 @@
 
 128 steps at 1/16 cover eight bars in 4/4. Both melodic and drum tracks get eight pages. Per-step nudge resolution remains unchanged; individual hit timing is a separate feature.
 
+## Required hardware-save repair
+
+The first 128-step patch omitted the extension sectors from the hardware write guard. This caused SONG SAVE ERROR on the FM-1 despite emulator tests passing. Apply the [hardware guard repair](../../patches/switchblade-extended-save-guard.patch) after the reference patch. It is checked against the original 128-step target and the later held-duration donor; [provenance](../../provenance-save-guard.json).
+
+The target guard must allow `0xB8000..0xD9FFF` for these Switch Blade extensions; `0xDA000..0xDBFFF` remain excluded. Other distros must use their own audited storage map. Current donor builds already contain the repair. [Save diagnosis, tests and the automatic song-name editor](https://github.com/ELI7VH/switchblade/blob/c8381dd6db763cd4c8974ab6995b099df2d396a1/docs/SONG-NAMING.md).
+
 ## Reference patch
 
 The [patch](../../patches/switchblade-128-steps.patch) applies only to WaveLoop Switch Blade at `ca460a2fd2be87da391b5cde33f527e04cb232e7`, reproducing firmware/tests at `201d86a96a162466d8170abe4f214af247a507e2`. It includes a synthetic legacy fixture, never a device backup.
