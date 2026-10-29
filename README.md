@@ -44,6 +44,25 @@ This is a source porting kit, not a universal firmware installer. Switch Blade i
 
 Other source distros: use the [generic integration contract](PORTING.md). No exact map is claimed yet for Prysm, april-os, mc-1, unibox, zp12, fm1-base or fm1_open. Closed vendor firmware requires an available, appropriately licensed source/build path; this kit cannot patch an opaque binary.
 
+## Controller setup tool
+
+Use [Arturia MiniLab CLI](https://github.com/ELI7VH/arturia-minilab-cli) to back up,
+compare and upload MiniLab 3 User presets without MIDI Control Center. Uploads
+back up the target slot automatically and verify all319 mapping fields.
+
+Follow its setup instructions, then upload your native `.minilab3` file:
+
+```sh
+minilab preset upload YOUR-PRESET.minilab3 --slot 1
+```
+
+Choose your intended User slot (1–5). The
+[fm1-sb-live preset](https://github.com/ELI7VH/switchblade/blob/2bd136d/controllers/fm1-sb-live.minilab3)
+maps K1–4 to ADSR and K5–8 to repeat, dirt, delay and filter on the matching
+WaveLoop Switch Blade build. Other distros need matching MIDI assignments.
+The CLI is tested with MiniLab 3 firmware1.2.0.69, including restart persistence;
+it programs controller mappings and does not install FM-1 firmware.
+
 ## Credits and license
 
 Read [CREDITS.md](CREDITS.md) before reusing code. Bundled source, fixtures and patch are GPL-3.0-only; original notices remain intact. This kit includes no firmware binaries, device backups, SDK blobs or sample packs. Linked optional dependencies retain their own licenses.
