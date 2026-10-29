@@ -1,0 +1,66 @@
+{
+  "license": "GPL-3.0-only",
+  "donor": {
+    "repository": "https://github.com/ELI7VH/switchblade",
+    "commit": "4f0de78c982d478e9f64388ea2c93ab771c4e2db",
+    "paths": [
+      "firmware/src/ui_big.c",
+      "firmware/src/ui_draw.c",
+      "firmware/src/core.h"
+    ]
+  },
+  "waveloop_theme": {
+    "source": "WaveLoop design tokens",
+    "repository": "https://github.com/lucian-labs/waveloop",
+    "commit": "e54230a099d03d90cd35aadf700f9552addbb82d",
+    "path": "ds/src/tokens.css",
+    "sha256": "7b20126cecc6175ccbfbfc3bc0db5567afc3dfa54f556ac67cbbbd70b0274e7e",
+    "tokens": [
+      "--wl-navy",
+      "--wl-navy-lift",
+      "--ink",
+      "--muted",
+      "--accent-2",
+      "--line",
+      "--wl-blue-hi"
+    ]
+  },
+  "files": [
+    {
+      "path": "kits/sequence_view/examples/demo.c",
+      "sha256": "cda245cf21364eea6cb26ad68282a2fbd5efa1a8800cea930604ce6ccd84e460"
+    },
+    {
+      "path": "kits/sequence_view/examples/preview.svg",
+      "sha256": "644d6e5378922c10402726e8ba96ae2342fdb228ab8bca5451ce27633e513a75"
+    },
+    {
+      "path": "kits/sequence_view/examples/switchblade_adapter.h",
+      "sha256": "5bb658cf7df1522da9e3970113a67ad00043c0e40f4dc6367ff25c4f8f92d6ed"
+    },
+    {
+      "path": "kits/sequence_view/sequence_view.c",
+      "sha256": "7fe5fb3167733d8c4f1fd4a11a5ed581a93a774dde5b03b23dfc7f08eed7faef"
+    },
+    {
+      "path": "kits/sequence_view/sequence_view.h",
+      "sha256": "3c15030a756f8e34489389c192be0c0f091519c22a280c3255c176889dc9dedc"
+    },
+    {
+      "path": "kits/sequence_view/tests/sequence_view_test.c",
+      "sha256": "1417e0bdf79e2d69fd90a97e3f19b790d0936a324db7919970cf3ad516206c18"
+    },
+    {
+      "path": "kits/bank_themes/bank_themes.c",
+      "sha256": "7fffdcc51dcbddccf3c72eb5f26e7c0587302a68810a62f43d28b469485ec11d"
+    },
+    {
+      "path": "kits/bank_themes/bank_themes.h",
+      "sha256": "18506fe398741fb1870f3e781b304bbd4d78e9626819f0d57cb3b7dd8f0c82c4"
+    },
+    {
+      "path": "kits/bank_themes/tests/bank_themes_test.c",
+      "sha256": "b85fc57f8b085a898b7400a0b19e1f5fe2c964a219d9f0a917811c03a3f133ea"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## WaveLoop additions
 
-**Elijah Lucian / Lucian Labs**: SHAYPE design/ports, persistent-song workflow, modified 808 voicing and per-drum controls, and the Switch Blade kit-lane editor/integration. This credits the modifications, not the underlying synthesis, clock or storage systems.
+**Elijah Lucian / Lucian Labs**: SHAYPE design/ports, persistent-song workflow, modified 808 voicing and per-drum controls, the Switch Blade kit-lane editor/integration, full-pattern sequence-view module, and reusable bank-theme module. This credits the modifications, not the underlying synthesis, clock or storage systems.
 
 ## Firmware foundations
 

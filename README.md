@@ -1,6 +1,6 @@
 # FM-1 WaveLoop Kits
 
-Port **SHAYPE**, **persistent songs**, **WaveLoop’s modified 808 drums**, and the **kit-lane drum sequencer** into FM-1 source firmware.
+Port **SHAYPE**, **persistent songs**, **WaveLoop’s modified 808 drums**, the **kit-lane drum sequencer**, and the **full-track sequence view** into FM-1 source firmware. Reuse bank themes across screens.
 
 By Elijah Lucian / Lucian Labs, building on the credited firmware authors below.
 
@@ -12,6 +12,8 @@ By Elijah Lucian / Lucian Labs, building on the credited firmware authors below.
 
 | Feature | Included | Guide |
 | --- | --- | --- |
+| Sequence view | Portable C renderer, full-pattern previews and Switch Blade adapter | [Sequence view](kits/sequence_view/README.md) |
+| Bank themes | Reusable bank-to-theme mapping; WaveLoop drum theme | [Themes](kits/bank_themes/README.md) |
 | SHAYPE / Shape Arp | Portable C core and parity fixtures | [Shape](kits/shape/README.md) |
 | Persistent songs | Autosave/resume contract and donor paths | [Songs](kits/persistent_songs/README.md) |
 | Modified 808 drums | Voice, controls and bank integration recipe | [808](kits/drums_808/README.md) |

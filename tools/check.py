@@ -9,6 +9,7 @@ import re
 import shlex
 import subprocess
 import tempfile
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 provenance = json.loads((ROOT / 'provenance.json').read_text())
@@ -37,4 +38,5 @@ with tempfile.TemporaryDirectory(prefix='fm1-kits-') as tmp:
         print(result.stderr)
         raise SystemExit(result.returncode)
     print(result.stdout.strip().splitlines()[-1])
+subprocess.run([sys.executable, str(ROOT / "tools/check_sequence_view.py")], check=True)
 print(f"PASS: source hashes, local links, {len(manifest['distros'])} distro maps, SHAYPE parity")

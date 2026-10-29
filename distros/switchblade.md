@@ -46,3 +46,7 @@ Follow the [drum sequencer recipe](../kits/drum_sequencer/README.md), using thes
 ## Acceptance
 
 Build with this distro’s own toolchain. Check flash/RAM/audio budgets, old-project import, external clock, note-off behavior, save/reboot and song switching. Then listen on a test unit. See [porting checklist](../PORTING.md).
+
+## Modular HOME sequence view
+
+The [sequence-view module](../kits/sequence_view/README.md) has a separate adapter pinned to `4f0de78c982d478e9f64388ea2c93ab771c4e2db`. It displays bank/patch and complete track patterns. Its [bank-theme module](../kits/bank_themes/README.md) preserves native per-machine palettes and binds DRUM to WaveLoop. These newer module pins do not replace the older exact-base patches above.
