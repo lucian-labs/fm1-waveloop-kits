@@ -15,6 +15,13 @@
 
 Other mapped distributions retain their own authorship and licenses; the map is a link/index, not redistributed code from those projects.
 
+## CoralFlower integration (external fork)
+
+- **FicusFicusov and contributors** — [CoralFlower](https://github.com/FicusFicusov/CoralFlower), native chord instrument, interface and transport.
+- **Quixotic7 and contributors** — [ChoralRoot FM-1](https://github.com/Quixotic7/ChoralRootFM1), its foundation after Felucca.
+- **Helena Zhang** — Departure Mono, retained by CoralFlower under its original font license.
+- **Elijah Lucian / Lucian Labs** — SHAYPE adapter, native grid/edit pages and independent pattern storage in the [opt-in fork](https://github.com/ELI7VH/CoralFlower). The source remains GPL-3.0-only; no CoralFlower assets are bundled here.
+
 ## Optional drum dependencies (not bundled)
 
 - **Lucian Labs, Yama-bruh** — [MIT source](https://github.com/lucian-labs/yama-bruh/tree/3eca861383e63e6c507c30402a204499faf79887). Firmware port `drum_yama.c` requires its MIT notice.

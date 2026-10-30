@@ -510,6 +510,40 @@
           "firmware/src/ui_input.c"
         ]
       }
+    },
+    {
+      "id": "coralflower",
+      "repository": "https://github.com/ELI7VH/CoralFlower",
+      "commit": "51580207d6a75d993cf7bba91447e96f6f851311",
+      "status": "SHAYPE implemented in the WaveLoop fork with native UI, independent storage and backup support. Host/core/build checks pass; hardware installation tracked in fm1 handoff. Other WaveLoop features are path maps only.",
+      "seams": {
+        "shape": [
+          "firmware/src/arp_shape.c",
+          "firmware/src/cf_play.c",
+          "firmware/src/cf_arp.c",
+          "firmware/src/cf_seqp.c",
+          "firmware/src/cf_ui.c",
+          "firmware/src/cf_views.c",
+          "firmware/src/cf_screens.c",
+          "firmware/src/cf_settings.c",
+          "firmware/src/cf_backup.c",
+          "firmware/src/storage.c"
+        ],
+        "persistent_songs": [
+          "firmware/src/cf_sequi.c",
+          "firmware/src/cf_settings.c",
+          "firmware/src/cf_seqp.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/cf_seqd.c",
+          "firmware/src/cf_sequi.c",
+          "firmware/src/cf_seqp.c"
+        ]
+      }
     }
   ]
 }

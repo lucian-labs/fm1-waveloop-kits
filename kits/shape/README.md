@@ -19,3 +19,9 @@ Reference integration: [Switch Blade at 777aff21f6f0](https://github.com/ELI7VH/
 Run the bundled parity fixtures, then target tests for internal/external clock, chord changes and held-note release. Core parity does not verify the target scheduler.
 
 Credits: SHAYPE design and WaveLoop ports by Elijah Lucian / Lucian Labs; surrounding firmware/transport by the authors in [CREDITS](../../CREDITS.md).
+
+## CoralFlower integration
+
+The [CoralFlower port](../../distros/coralflower.md) connects SHAYPE to its native chord player,
+CHORDS/LAYER tracks and interface. It includes drawing, lengths, movement, attachment, quiet autosave
+and validated backup/restore. The opt-in fork includes complete source and a reproducible test runner.
