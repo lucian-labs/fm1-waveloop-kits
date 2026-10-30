@@ -34,3 +34,12 @@ retains CoralFlower's native free-run behavior. Back up before changing firmware
 SHAYPE and port: Elijah Lucian / Lucian Labs. CoralFlower: FicusFicusov and contributors;
 ChoralRoot: Quixotic7; Felucca: Leo Kuroshita / Hügelton Instruments; FM engine: Kerem Kilic / Melodee;
 Departure Mono: Helena Zhang. GPL-3.0-only; retain all original headers and dependency notices.
+
+## Hardware smoke check — 2026-10-30
+
+Installed/rebooted on FM1-TEST after a full Switch Blade backup and the installer's required official-V15 bridge.
+SHAYPE enabled; native settings and default pattern read back exactly after restart. Actual target MIDI output:
+16 chord note-ons, eight polyphonic pairs, clean release. A separate six-second default-pattern organ test
+added no late buffers, sheds or steals. Two earlier late-buffer counts were observed during setup and not
+isolated to a cause; no general CPU/stress claim is made. Physical listening remains with the user.
+SHOW and GHOUL were not modified. [Release](https://github.com/ELI7VH/CoralFlower/releases/tag/v0.6.1-wlshape1).
