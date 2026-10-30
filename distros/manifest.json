@@ -545,6 +545,43 @@
           "firmware/src/cf_seqp.c"
         ]
       }
+    },
+    {
+      "id": "choralroot",
+      "repository": "https://github.com/ELI7VH/ChoralRootFM1",
+      "commit": "dc018a0fcc81e59e63abec2505726915688ea4f4",
+      "status": "SHAYPE implemented, host/emulator tested and standard/one-core candidates built; not installed. Native Pattern13/UI/SAVE session migration, original modes and IDs retained. Other WaveLoop features are maps only.",
+      "seams": {
+        "shape": [
+          "firmware/src/arp_shape.c",
+          "firmware/src/cr_shape.h",
+          "firmware/src/cr_engine.c",
+          "firmware/src/cr_engine.h",
+          "firmware/src/cr_ui.c",
+          "firmware/src/cr_draw.c",
+          "firmware/src/cr_screen.h",
+          "firmware/src/cr_out.c",
+          "firmware/src/cr_settings.c",
+          "firmware/src/cr_settings.h",
+          "firmware/src/cr_backup.c",
+          "tools/fm1_install.py",
+          "web/fm1backup.js"
+        ],
+        "persistent_songs": [
+          "firmware/src/cr_settings.c",
+          "firmware/src/cr_loop.c",
+          "firmware/src/cr_ui.c"
+        ],
+        "drums_808": [
+          "firmware/src/drum_voice.c",
+          "firmware/src/eng_drum.c",
+          "firmware/src/choralroot.c"
+        ],
+        "drum_sequencer": [
+          "firmware/src/cr_loop.c",
+          "firmware/src/cr_ui.c"
+        ]
+      }
     }
   ]
 }

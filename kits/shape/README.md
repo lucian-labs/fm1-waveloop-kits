@@ -25,3 +25,9 @@ Credits: SHAYPE design and WaveLoop ports by Elijah Lucian / Lucian Labs; surrou
 The [CoralFlower port](../../distros/coralflower.md) connects SHAYPE to its native chord player,
 CHORDS/LAYER tracks and interface. It includes drawing, lengths, movement, attachment, quiet autosave
 and validated backup/restore. The opt-in fork includes complete source and a reproducible test runner.
+
+## ChoralRoot integration
+
+The [ChoralRoot candidate](../../distros/choralroot.md) uses native Pattern13, a themed grid,
+22 divisions through 1/64T, native HOLD/LOCK, and global SAVE with old-session migration.
+It is built/host-tested and queued next; CoralFlower remains the current TEST firmware.

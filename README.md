@@ -23,6 +23,7 @@ This is a source porting kit, not a universal firmware installer. Switch Blade i
 
 ## Distro maps
 
+- [choralroot — next SHAYPE candidate, built/tested](distros/choralroot.md)
 - [coralflower — SHAYPE fork and native UI](distros/coralflower.md)
 - [switchblade](distros/switchblade.md)
 - [melodee](distros/melodee.md)

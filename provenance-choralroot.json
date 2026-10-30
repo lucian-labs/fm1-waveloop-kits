@@ -1,0 +1,107 @@
+{
+  "license": "GPL-3.0-only",
+  "upstream": {
+    "repository": "https://github.com/Quixotic7/ChoralRootFM1",
+    "commit": "ec9c54fdd7a0a544e8ec82bec196db745868f057"
+  },
+  "integration": {
+    "repository": "https://github.com/ELI7VH/ChoralRootFM1",
+    "commit": "dc018a0fcc81e59e63abec2505726915688ea4f4",
+    "status": "prepared-not-installed",
+    "files": [
+      {
+        "path": "firmware/src/arp_shape.c",
+        "sha256": "9c4f1359e80ed3f902bb578a40a2e7dfae870ecb2f13f186a06c3e2cbb8423d1"
+      },
+      {
+        "path": "firmware/src/cr_shape.h",
+        "sha256": "e0671096de6c88ba75f651b5e2260f95127de19f9aab0e65a07cedae673002d7"
+      },
+      {
+        "path": "firmware/src/cr_engine.c",
+        "sha256": "30d622578df557b95ec9889250f96370808cc8848551f0f49059fef3e9edb059"
+      },
+      {
+        "path": "firmware/src/cr_engine.h",
+        "sha256": "dcd533fac09e893b644b624930e03b771681ddb00556bf23916147e319452f2a"
+      },
+      {
+        "path": "firmware/src/cr_ui.c",
+        "sha256": "1fd9e4e332ba499dc9488a9451612623237f334f98580fbce9278eb79646b485"
+      },
+      {
+        "path": "firmware/src/cr_draw.c",
+        "sha256": "0e531eb013c3fe74c5a360bd30971acd4976cfa03ce5efdd7ec5ea693201448e"
+      },
+      {
+        "path": "firmware/src/cr_screen.h",
+        "sha256": "28d6c1a090823a69a2a7c5e052d523012c05e22973c1272d71bd59b5cb2e3f32"
+      },
+      {
+        "path": "firmware/src/cr_out.c",
+        "sha256": "3add6ad4fb25b4b541282b80650825ad6564632962d4ad192cbcab9b116b6d1b"
+      },
+      {
+        "path": "firmware/src/cr_settings.c",
+        "sha256": "4b24c0198f088edd99e8a9705630154f477d87c9da589c94f7722352e557c8a5"
+      },
+      {
+        "path": "firmware/src/cr_settings.h",
+        "sha256": "d942b43bb5329a18dbc0efd08003ae7fdb6954ef99ecc65fb459465f2eff5409"
+      },
+      {
+        "path": "firmware/src/cr_backup.c",
+        "sha256": "d728dc80c4993e4ae9948e86116a4494900add84fa95a376227b81fbb2b56c69"
+      },
+      {
+        "path": "tools/fm1_install.py",
+        "sha256": "6be604eaacb5a0b46f986ea2c332a824cfde59a81e2b40e32fedf6c088c4c984"
+      },
+      {
+        "path": "web/fm1backup.js",
+        "sha256": "42fd579f9d374579efb0500118c1da4cff5a78633244144e6446027f5b1ad5c1"
+      }
+    ]
+  },
+  "core_provenance": {
+    "license": "GPL-3.0-only",
+    "upstream": {
+      "repository": "https://github.com/Quixotic7/ChoralRootFM1",
+      "commit": "ec9c54fdd7a0a544e8ec82bec196db745868f057"
+    },
+    "core_donor": {
+      "repository": "https://github.com/ELI7VH/switchblade",
+      "commit": "240bd0d449b8ab5e9b022edba1470df487b6da79"
+    },
+    "files": [
+      {
+        "path": "firmware/src/arp_shape.c",
+        "sha256": "9c4f1359e80ed3f902bb578a40a2e7dfae870ecb2f13f186a06c3e2cbb8423d1"
+      },
+      {
+        "path": "tests/arp_shape_test.c",
+        "sha256": "5eef9771ac4ccae95472a0b689dcb5483d794d6feb93ccd1403ff79fe9e20f4b"
+      },
+      {
+        "path": "tests/arp_vectors.h",
+        "sha256": "e158d39d03b35f51c4eb0574049efe16a91553920d76119abdae6eed381e5242"
+      },
+      {
+        "path": "tests/arp_window_vectors.h",
+        "sha256": "d0de98ea4b719fb4d6093a3040e3a7d58f03ad1a5378e3e58d9e200d92efa735"
+      },
+      {
+        "path": "tests/arp_zoom_vectors.h",
+        "sha256": "2f9dd9ce22ddea28bb6036b1e633d91ee7e3d3f5b7221bf6086f608cd162ef23"
+      },
+      {
+        "path": "tests/arp_shift_vectors.h",
+        "sha256": "8970b3e0a9828399bbdf1e6967b358a5fa2461e876a99a26011cd900d201a1e6"
+      },
+      {
+        "path": "tests/arp_chords_vectors.h",
+        "sha256": "f693be70711c1c7125ada3b92be54208047321c2d03a1f5e2368ab0b9ff9d72c"
+      }
+    ]
+  }
+}
