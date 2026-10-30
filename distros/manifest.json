@@ -514,8 +514,8 @@
     {
       "id": "coralflower",
       "repository": "https://github.com/ELI7VH/CoralFlower",
-      "commit": "51580207d6a75d993cf7bba91447e96f6f851311",
-      "status": "SHAYPE implemented in the WaveLoop fork with native UI, independent storage and backup support. Host/core/build checks pass; hardware installation tracked in fm1 handoff. Other WaveLoop features are path maps only.",
+      "commit": "0d0d5a711824c5df1f7922a5a39a96efc6842dbd",
+      "status": "SHAYPE implemented and installed on TEST; native UI, 21 straight/triplet/dotted divisions through 1/64, independent storage/backup. Core parity,1854 timing/integration and target build checks pass. Other WaveLoop features are maps only.",
       "seams": {
         "shape": [
           "firmware/src/arp_shape.c",
@@ -527,7 +527,8 @@
           "firmware/src/cf_screens.c",
           "firmware/src/cf_settings.c",
           "firmware/src/cf_backup.c",
-          "firmware/src/storage.c"
+          "firmware/src/storage.c",
+          "firmware/src/cf_out.c"
         ],
         "persistent_songs": [
           "firmware/src/cf_sequi.c",

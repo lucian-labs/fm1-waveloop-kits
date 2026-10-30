@@ -6,7 +6,7 @@
   },
   "integration": {
     "repository": "https://github.com/ELI7VH/CoralFlower",
-    "commit": "51580207d6a75d993cf7bba91447e96f6f851311",
+    "commit": "0d0d5a711824c5df1f7922a5a39a96efc6842dbd",
     "guide": "docs/SHAYPE.md",
     "files": [
       {
@@ -15,11 +15,11 @@
       },
       {
         "path": "firmware/src/cf_play.c",
-        "sha256": "4561fc5336a94b03baba746c6e033d5ba0bddaaa9c2d85761a62ca910b084e96"
+        "sha256": "f854a927e1b6422c1516dad02719528ae2b28421d0b61d24523e17cf90b753b0"
       },
       {
         "path": "firmware/src/cf_arp.c",
-        "sha256": "13a25595b94d526c2ae30911fd1d1ed7be6e9645e4b56c2f1bcbfcbf6fc9098b"
+        "sha256": "3635aa9d16a3ecdb15cb8ffb5881a26e3dd88102a00de1618b5c2394a2dc05c3"
       },
       {
         "path": "firmware/src/cf_seqp.c",
@@ -27,7 +27,7 @@
       },
       {
         "path": "firmware/src/cf_ui.c",
-        "sha256": "d856de80c221b782dbe3e498f8e0be64cfea0e7fea2b0258e91f9714949d2da0"
+        "sha256": "797db6a2bcadd09e47e02d54f4d90d57d4f1b8ce812bc34605f78ea573ab2936"
       },
       {
         "path": "firmware/src/cf_views.c",
@@ -48,6 +48,10 @@
       {
         "path": "firmware/src/storage.c",
         "sha256": "db7516de7ecc41b1ed4d74ccad615034a24c4cbb36a1980a80a2bcb80770736b"
+      },
+      {
+        "path": "firmware/src/cf_out.c",
+        "sha256": "9664a845ded55233d07651c5d5260760ce7c03b6e635ebc3a668638de0391ad4"
       }
     ]
   },
