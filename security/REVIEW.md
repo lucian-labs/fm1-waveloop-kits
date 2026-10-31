@@ -18,6 +18,8 @@ Existing distro maps are path references, not security approvals. Do not mark th
    [the report template](review-template.md). Keep the report in `security/reviews/` for each adopted distro.
    A targeted source review is not a malware-free certification or independent binary/toolchain audit.
 
+Recorded compiler check: [JieLi 20250324.1](reviews/jieli-20250324.1.md). This pins observed identity, not a general compiler safety approval.
+
 ## Offline Docker builds
 
 `tools/docker_build.py` builds a Git snapshot, excluding uncommitted edits and host credentials.

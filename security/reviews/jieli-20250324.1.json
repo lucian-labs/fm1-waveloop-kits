@@ -1,0 +1,19 @@
+{
+  "archive_sha256": "f686586bcfb45e0f0bb27fd2b39c7a7f313cb4f0e88a66a14da621ffa8225958",
+  "compiler_sha256": "42b94f9e11140b0fcab8f807b2872ad245b8eeca03a2d792f8706c5a3a35d34c",
+  "counts": {
+    "files": 599,
+    "symlinks": 44,
+    "directories": 51
+  },
+  "mismatches": [],
+  "extra_paths": [],
+  "version": "20250324.1",
+  "compiler_version": "clang 4.0.1",
+  "review_date": "2026-10-31",
+  "vendor_archive_url": "https://jl-update.oss-cn-shenzhen.aliyuncs.com/jieli-linux-toolchains-20250324.1.tar.xz",
+  "vendor_documentation": "https://doc.zh-jieli.com/SDKWiki/master/Jieli-Tech/fw-AC79_AIoT_SDK/1-overview/1.2-build-environment.html",
+  "test_image": "sha256:0b57365b7293ad8c7063b42a64bf2cf9db01d50e0c9272939b3451fe8916376f",
+  "probe_object_sha256": "a898ac04e00bdb26d8a3d68884af4e31ada1307c3b820d24c207db078b3de5c1",
+  "trust_limit": "Vendor HTTPS distribution match; no independently verified vendor signature or clean bootstrap; not a malware-free certification."
+}
