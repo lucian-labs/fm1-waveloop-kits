@@ -6,8 +6,8 @@
   },
   "integration": {
     "repository": "https://github.com/ELI7VH/ChoralRootFM1",
-    "commit": "a227cee5ad5399772abb3329ea7a92c5d9ca27dd",
-    "status": "installed-on-test; target MIDI smoke verified; physical listening pending",
+    "commit": "f2bad78b940e93f803c4f800b8e465e1b7289981",
+    "status": "wlshape2 octave build prepared/host-tested; TEST currently wlshape1",
     "files": [
       {
         "path": "firmware/src/arp_shape.c",
@@ -15,11 +15,11 @@
       },
       {
         "path": "firmware/src/cr_shape.h",
-        "sha256": "e0671096de6c88ba75f651b5e2260f95127de19f9aab0e65a07cedae673002d7"
+        "sha256": "31445532600b3011f87944f4940f3db85246cf995a8de216296735b46a860f8c"
       },
       {
         "path": "firmware/src/cr_engine.c",
-        "sha256": "30d622578df557b95ec9889250f96370808cc8848551f0f49059fef3e9edb059"
+        "sha256": "52d1557d0fd8be9826521b57ec86bffa2682d3ac4e45f85e50891104c2c521a1"
       },
       {
         "path": "firmware/src/cr_engine.h",
@@ -27,7 +27,7 @@
       },
       {
         "path": "firmware/src/cr_ui.c",
-        "sha256": "1fd9e4e332ba499dc9488a9451612623237f334f98580fbce9278eb79646b485"
+        "sha256": "e6c6cca3d26947d9dbabdbd713a0343da248e81364d92588f7e0d85084d649f2"
       },
       {
         "path": "firmware/src/cr_draw.c",

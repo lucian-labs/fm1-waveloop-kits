@@ -1,8 +1,8 @@
 # ChoralRoot FM-1 + SHAYPE
 
 **Installed on TEST as ChoralRoot 0.27-wlshape1.** SHAYPE Pattern 13 selected; Perform enabled.
-[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/a227cee5ad5399772abb3329ea7a92c5d9ca27dd) ·
-[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/a227cee5ad5399772abb3329ea7a92c5d9ca27dd/docs/SHAYPE.md).
+[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/f2bad78b940e93f803c4f800b8e465e1b7289981) ·
+[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/f2bad78b940e93f803c4f800b8e465e1b7289981/docs/SHAYPE.md).
 Upstream: Quixotic7/ChoralRootFM1 at `ec9c54fdd7a0a544e8ec82bec196db745868f057`.
 
 ## SHAYPE implementation
@@ -48,3 +48,13 @@ The fork is opt-in; no upstream PR or developer message was sent.
 SHAYPE design/adapter: Elijah Lucian / Lucian Labs. ChoralRoot: Quixotic7 and contributors, after their monome-grid
 choralroot engine. Felucca: Leo Kuroshita / Hügelton Instruments. Other engines/fonts keep upstream credits.
 GPL-3.0-only, original notices retained. This kit does not bundle firmware binaries, backups or SDK files.
+
+## Octave update — wlshape2 prepared
+
+Shape-page K4 replaces ROOT pitch floor with signed **Octave −2…+2**. Every generated SHAYPE
+note shifts12semitones per detent, affecting upcoming attacks without resetting the pattern.
+The prior reserved byte stores octave; legacy root remains in the record but is ignored.
+Older sessions use octave0; SHAYPE132bytes/sessionv2 1156bytes unchanged. Native globalSAVE persists it.
+2030SHAYPE fullUBSan and16UI/save/revert checks pass alongside native/core/build guards.
+Native emulator label inspected. wlshape2 prepared; TEST remains wlshape1 pending installation.
+FM1 transfer clients must distinguish this from wlshape1's ROOT floor; preserve signed octave on read/modify/write.
