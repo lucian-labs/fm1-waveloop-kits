@@ -7,7 +7,7 @@ By Elijah Lucian / Lucian Labs, building on the credited firmware authors below.
 ## Start here
 
 1. Pick your [distro map](#distro-maps).
-2. Follow the feature recipe and [porting checklist](PORTING.md).
+2. Complete the [code audit and isolated build intake](security/REVIEW.md), then follow the feature recipe and [porting checklist](PORTING.md).
 3. Run `python3 tools/check.py` to verify the bundled SHAYPE core and kit integrity.
 
 | Feature | Included | Guide |

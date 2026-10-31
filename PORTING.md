@@ -13,6 +13,10 @@ A common FM-1 board does not imply a common firmware API. Start from a buildable
 
 Port one feature at a time. For a Felucca-shaped tree, follow the pinned source map. For a different architecture, wrap the same behavioral contracts in its native modules; do not transplant an amalgamated engine wholesale.
 
+## Security intake
+
+Before executing a new distro’s tools, complete the [code audit and offline Docker build review](security/REVIEW.md). Repeat for changed source or build dependencies. Record actual findings and review limits; a path map does not imply security approval.
+
 ## Acceptance gate
 
 1. Build and run the target’s existing regression tests, then feature parity tests.
