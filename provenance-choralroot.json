@@ -6,8 +6,8 @@
   },
   "integration": {
     "repository": "https://github.com/ELI7VH/ChoralRootFM1",
-    "commit": "dc018a0fcc81e59e63abec2505726915688ea4f4",
-    "status": "prepared-not-installed",
+    "commit": "a227cee5ad5399772abb3329ea7a92c5d9ca27dd",
+    "status": "installed-on-test; target MIDI smoke verified; physical listening pending",
     "files": [
       {
         "path": "firmware/src/arp_shape.c",

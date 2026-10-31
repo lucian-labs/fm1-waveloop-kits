@@ -1,8 +1,8 @@
 # ChoralRoot FM-1 + SHAYPE
 
-**Prepared next candidate; not installed on hardware.** TEST remains on CoralFlower wlshape2.
-[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/dc018a0fcc81e59e63abec2505726915688ea4f4) ·
-[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/dc018a0fcc81e59e63abec2505726915688ea4f4/docs/SHAYPE.md).
+**Installed on TEST as ChoralRoot 0.27-wlshape1.** SHAYPE Pattern 13 selected; Perform enabled.
+[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/a227cee5ad5399772abb3329ea7a92c5d9ca27dd) ·
+[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/a227cee5ad5399772abb3329ea7a92c5d9ca27dd/docs/SHAYPE.md).
 Upstream: Quixotic7/ChoralRootFM1 at `ec9c54fdd7a0a544e8ec82bec196db745868f057`.
 
 ## SHAYPE implementation
@@ -34,9 +34,13 @@ whose native PUT clears an old session. Keep pre-upgrade backups for downgrades.
 Core parity; 2800 existing engine, 483 loop, 296 settings, 236 backup, 2012 focused SHAYPE under full UBSan,
 13 UI/save/restore/redraw and 34 MIDI checks pass. Output-routing, CLI-installer and browser-backup tests pass.
 Standard and one-core target packages build with native guards enabled. Native emulator input renders
-SHAYPE pages and produces audio. No physical installation, listening or CPU/headroom certification is claimed.
-The next TEST install requires a fresh CoralFlower backup, stopped confirmation and the native installer's
-compatibility check/official-V15 bridge if refused. SHOW and GHOUL are excluded.
+SHAYPE pages and produces audio. Installed on TEST after stopped confirmation and a fresh CoralFlower
+wlshape3 backup, using the official-V15 bridge and native installers without force. Reboot/version verified.
+A four-second real-target key/chord test produced 28 chord note-ons and 12 polyphonic pairs, with no attacks
+after release grace. Temporary MIDI Keys mapping removed; selected settings read back exactly, all other
+objects unchanged from first boot. An unrecognized legacy settings record was preserved in that backup;
+the new selected settings use ChoralRoot's native boot defaults. Session69 remains empty until global SAVE.
+Physical listening and broad CPU/headroom acceptance remain pending. SHOW/GHOUL were not modified.
 
 Paths/hashes: [manifest](manifest.json), [provenance](../provenance-choralroot.json).
 The fork is opt-in; no upstream PR or developer message was sent.

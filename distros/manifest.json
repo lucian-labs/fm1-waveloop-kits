@@ -549,8 +549,8 @@
     {
       "id": "choralroot",
       "repository": "https://github.com/ELI7VH/ChoralRootFM1",
-      "commit": "dc018a0fcc81e59e63abec2505726915688ea4f4",
-      "status": "SHAYPE implemented, host/emulator tested and standard/one-core candidates built; not installed. Native Pattern13/UI/SAVE session migration, original modes and IDs retained. Other WaveLoop features are maps only.",
+      "commit": "a227cee5ad5399772abb3329ea7a92c5d9ca27dd",
+      "status": "SHAYPE installed/reboot/settings-readback verified on TEST as ChoralRoot0.27-wlshape1; native Pattern13, three pages,22divisions through64T/D, session69. Target MIDI smoke passes. Physical listening and broad CPU acceptance pending; other modules are maps only.",
       "seams": {
         "shape": [
           "firmware/src/arp_shape.c",
