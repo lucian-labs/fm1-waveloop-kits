@@ -549,8 +549,8 @@
     {
       "id": "choralroot",
       "repository": "https://github.com/ELI7VH/ChoralRootFM1",
-      "commit": "f2bad78b940e93f803c4f800b8e465e1b7289981",
-      "status": "SHAYPE wlshape1 installed on TEST; wlshape2 signed Octave-2..+2 update built/host-tested, awaiting saved/stopped confirmation. Native Pattern13,22divisions,session69; other modules maps only.",
+      "commit": "9b2b3c086104135ba4e49d84fde115cc9a020dc1",
+      "status": "SHAYPE wlshape3 installed/reboot/readback and target MIDI verified on TEST. Octave-2..+2 and optional Scale Keys layout with scale-following chords, inversions and 7/9/13 combinations. Pattern13,22divisions,session69. Other kit modules remain maps only.",
       "seams": {
         "shape": [
           "firmware/src/arp_shape.c",

@@ -6,8 +6,8 @@
   },
   "integration": {
     "repository": "https://github.com/ELI7VH/ChoralRootFM1",
-    "commit": "f2bad78b940e93f803c4f800b8e465e1b7289981",
-    "status": "wlshape2 octave build prepared/host-tested; TEST currently wlshape1",
+    "commit": "9b2b3c086104135ba4e49d84fde115cc9a020dc1",
+    "status": "wlshape3 installed/readback/target MIDI verified on TEST; Scale Keys selected, physical listening pending",
     "files": [
       {
         "path": "firmware/src/arp_shape.c",
@@ -19,15 +19,15 @@
       },
       {
         "path": "firmware/src/cr_engine.c",
-        "sha256": "52d1557d0fd8be9826521b57ec86bffa2682d3ac4e45f85e50891104c2c521a1"
+        "sha256": "a436160a389b3a895113e03d5d07b3837774fe928ebef8a5bf946a7e3a811e61"
       },
       {
         "path": "firmware/src/cr_engine.h",
-        "sha256": "dcd533fac09e893b644b624930e03b771681ddb00556bf23916147e319452f2a"
+        "sha256": "70cb10f83fbda30622728541aae80cfc32c705cbfdebd4117db82ff54f576f0b"
       },
       {
         "path": "firmware/src/cr_ui.c",
-        "sha256": "e6c6cca3d26947d9dbabdbd713a0343da248e81364d92588f7e0d85084d649f2"
+        "sha256": "8a894ec92bfe69bc679dd3b805ec38dd9322c6101d83187a7d9263eb8f4a4414"
       },
       {
         "path": "firmware/src/cr_draw.c",
@@ -39,15 +39,15 @@
       },
       {
         "path": "firmware/src/cr_out.c",
-        "sha256": "3add6ad4fb25b4b541282b80650825ad6564632962d4ad192cbcab9b116b6d1b"
+        "sha256": "a16ebe9281afce01399f3583b01a8d76206d62dd77429b219b3ebc8b705b628d"
       },
       {
         "path": "firmware/src/cr_settings.c",
-        "sha256": "4b24c0198f088edd99e8a9705630154f477d87c9da589c94f7722352e557c8a5"
+        "sha256": "a7011bf25da47ac7a98df0c0a0ffce8189d54a2903c014a0e0e39fba5f7a3f2a"
       },
       {
         "path": "firmware/src/cr_settings.h",
-        "sha256": "d942b43bb5329a18dbc0efd08003ae7fdb6954ef99ecc65fb459465f2eff5409"
+        "sha256": "3b970fd3b12916bea75fead44c94a80d87c12155abf1e34a73efb4fc7eda6cd1"
       },
       {
         "path": "firmware/src/cr_backup.c",
@@ -60,6 +60,18 @@
       {
         "path": "web/fm1backup.js",
         "sha256": "42fd579f9d374579efb0500118c1da4cff5a78633244144e6446027f5b1ad5c1"
+      },
+      {
+        "path": "tests/cr_scale_keys_test.c",
+        "sha256": "341e938d611350f29d8f7a0892f1a9de13c3e9803604f1ca9630e85012805316"
+      },
+      {
+        "path": "tests/cr_shape_test.c",
+        "sha256": "a2d5bafe663db41c1e36b0c8a66155835e2e8049a3884cfae97e405f6613a431"
+      },
+      {
+        "path": "tests/cr_shape_ui_test.c",
+        "sha256": "6d3f65d3141387725bfe5e060679211a43d8228fc85942c5f9d71a160a39a541"
       }
     ]
   },

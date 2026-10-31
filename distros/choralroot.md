@@ -1,8 +1,8 @@
 # ChoralRoot FM-1 + SHAYPE
 
-**Installed on TEST as ChoralRoot 0.27-wlshape1.** SHAYPE Pattern 13 selected; Perform enabled.
-[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/f2bad78b940e93f803c4f800b8e465e1b7289981) ·
-[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/f2bad78b940e93f803c4f800b8e465e1b7289981/docs/SHAYPE.md).
+**Installed on TEST as ChoralRoot 0.27-wlshape3.** SHAYPE Pattern 13 selected; Perform enabled.
+[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/9b2b3c086104135ba4e49d84fde115cc9a020dc1) ·
+[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/9b2b3c086104135ba4e49d84fde115cc9a020dc1/docs/SHAYPE.md).
 Upstream: Quixotic7/ChoralRootFM1 at `ec9c54fdd7a0a544e8ec82bec196db745868f057`.
 
 ## SHAYPE implementation
@@ -49,12 +49,25 @@ SHAYPE design/adapter: Elijah Lucian / Lucian Labs. ChoralRoot: Quixotic7 and co
 choralroot engine. Felucca: Leo Kuroshita / Hügelton Instruments. Other engines/fonts keep upstream credits.
 GPL-3.0-only, original notices retained. This kit does not bundle firmware binaries, backups or SDK files.
 
-## Octave update — wlshape2 prepared
+## Octave update — wlshape2
 
 Shape-page K4 replaces ROOT pitch floor with signed **Octave −2…+2**. Every generated SHAYPE
 note shifts12semitones per detent, affecting upcoming attacks without resetting the pattern.
 The prior reserved byte stores octave; legacy root remains in the record but is ignored.
 Older sessions use octave0; SHAYPE132bytes/sessionv2 1156bytes unchanged. Native globalSAVE persists it.
 2030SHAYPE fullUBSan and16UI/save/revert checks pass alongside native/core/build guards.
-Native emulator label inspected. wlshape2 prepared; TEST remains wlshape1 pending installation.
+Native emulator label inspected. wlshape2 installed; actual target MIDI confirmed exact±12shifts, all saved objects preserved. TEST is now wlshape3 below.
 FM1 transfer clients must distinguish this from wlshape1's ROOT floor; preserve signed octave on read/modify/write.
+
+## Scale Keys — wlshape3 installed
+
+Options → Chord Keys → **Scale Keys**: roots C4up follow selected Major/Minor key/scale.
+F/G/A/B select root/first/second/third inversion. Hold F♯/G♯/B♭ for diatonic7/9/13, alone or combined;
+release removes that extension. Classic/FM-1 remain selectable. White key release keeps inversion.
+Layout uses raw_sound bit6 (0x40); settings192/session1156 bytes unchanged. Preserve this flag
+when transferring other settings. Musical pattern/inversion state still uses native globalSAVE.
+10,759 Scale Keys fullUBSan and23nativeUI/save/restore checks pass alongside existing suites and
+targetguards. Actual TEST MIDI verified Major/Minor chords, all inversions, seven extension sets,
+independent removal, SHAYPE walking the six-note chord and clean release. All original stored
+objects matched after firmware update; only selected Scale Keys option changed afterward, readback exact.
+Temporary MIDIKeys routing/test scales removed. Physical listening/broad CPU acceptance remain separate.
