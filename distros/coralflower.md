@@ -1,10 +1,10 @@
 # CoralFlower
 
-**SHAYPE is implemented** in the [WaveLoop fork](https://github.com/ELI7VH/CoralFlower/tree/0d0d5a711824c5df1f7922a5a39a96efc6842dbd),
+**SHAYPE is implemented** in the [WaveLoop fork](https://github.com/ELI7VH/CoralFlower/tree/af5079836647a6d69a1770b1980df71278def0e1),
 using CoralFlower's own interface and chord/sequencer players. Based on
 [FicusFicusov/CoralFlower](https://github.com/FicusFicusov/CoralFlower) at `272cad9e85a444d879d72598807b7ca01a098d6d`.
 
-Use the [play/edit and developer guide](https://github.com/ELI7VH/CoralFlower/blob/0d0d5a711824c5df1f7922a5a39a96efc6842dbd/docs/SHAYPE.md)
+Use the [play/edit and developer guide](https://github.com/ELI7VH/CoralFlower/blob/af5079836647a6d69a1770b1980df71278def0e1/docs/SHAYPE.md)
 and [fork release packages](https://github.com/ELI7VH/CoralFlower/releases).
 This is an opt-in fork; no upstream PR or developer outreach has been sent.
 
@@ -25,11 +25,14 @@ K4 on Draw adds/removes a note; K3 edits its length. Seven starters, 1–64 step
 62 stored notes, eight active pitches per player. CHORDS and LAYER have independent runtime gates
 and share the edited pattern/settings. Native arp modes, bass and interface remain.
 
-The WHS1 record uses `0xA0000 / 0xA1000`, unused while CoralFlower's CZ engine is disabled.
+The WHS2 record uses `0xA0000 / 0xA1000`, unused while CoralFlower's CZ engine is disabled.
 It autosaves after 1.5 seconds without edits once audio is quiet, uses native A/B writes, and
 adds validated backup/restore object 68. No upstream settings or sequencer format change.
-Rate changes join the next beat-grid slot without resetting pattern position; a stopped grid
-retains CoralFlower's native free-run behavior. Back up before changing firmware families.
+SYNC = Free retains the chord-triggered/free-running behavior. SYNC = Transport joins the current
+transport step and pass, waits while stopped, and resumes held/latched chords on restart. Rate changes
+join the new division's transport phase. SHAYPE > Up / Down strums each step's generated notes;
+Attach-page GAP sets spacing, shortened at fast rates to fit inside the step. WHS1 backups migrate
+with Sync = Free, retaining all prior pattern/settings bytes (140 → 144-byte shape record). Back up before changing firmware families.
 
 SHAYPE and port: Elijah Lucian / Lucian Labs. CoralFlower: FicusFicusov and contributors;
 ChoralRoot: Quixotic7; Felucca: Leo Kuroshita / Hügelton Instruments; FM engine: Kerem Kilic / Melodee;
@@ -52,3 +55,10 @@ runs at 96 PPQN with incoming MIDI-pulse interpolation; native sequencing/MIDI o
 No pattern or settings format change. All rate-pair/swing, duration and grid tests pass, including UBSan.
 `cf_out.c` is the added fine-grid integration seam. TEST's 27 song/settings objects are verified after installation.
 [Release](https://github.com/ELI7VH/CoralFlower/releases/tag/v0.6.1-wlshape2).
+
+## Transport and step strum — wlshape3
+
+Two compound modes, SHAYPE > Up / Down, and Attach-page SYNC / GAP are implemented.
+2,716 new transport/strum/migration checks pass, alongside donor parity, 1,854 existing timing/player
+checks, 134 backup checks, focused UBSan and target build guards. Native emulator UI inspected.
+The wlshape3 build is prepared; physical installation/timing/listening are pending. TEST still runs wlshape2.

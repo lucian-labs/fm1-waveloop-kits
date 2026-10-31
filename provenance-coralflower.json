@@ -6,7 +6,7 @@
   },
   "integration": {
     "repository": "https://github.com/ELI7VH/CoralFlower",
-    "commit": "0d0d5a711824c5df1f7922a5a39a96efc6842dbd",
+    "commit": "af5079836647a6d69a1770b1980df71278def0e1",
     "guide": "docs/SHAYPE.md",
     "files": [
       {
@@ -15,23 +15,23 @@
       },
       {
         "path": "firmware/src/cf_play.c",
-        "sha256": "f854a927e1b6422c1516dad02719528ae2b28421d0b61d24523e17cf90b753b0"
+        "sha256": "97835fbc9551f4736c8583f362868c7fb22ec858507c32b49da3f4fba6097268"
       },
       {
         "path": "firmware/src/cf_arp.c",
-        "sha256": "3635aa9d16a3ecdb15cb8ffb5881a26e3dd88102a00de1618b5c2394a2dc05c3"
+        "sha256": "4143bffa3100e28f3249ecd0c45bb0158a8f5592d6cd9181c5dbb17a482c488b"
       },
       {
         "path": "firmware/src/cf_seqp.c",
-        "sha256": "9df212405fa10cb6b9cce967ebce0ca8f271c7080738b37f0736387002f4fafe"
+        "sha256": "5524caad38039b03b8aefba6867b8d6c3c377d5719f8051e01a400ab575fcc4d"
       },
       {
         "path": "firmware/src/cf_ui.c",
-        "sha256": "797db6a2bcadd09e47e02d54f4d90d57d4f1b8ce812bc34605f78ea573ab2936"
+        "sha256": "370be5e52ede3aae8fa0b306d655fd7683738adb6a5fbd202f09e1d287e39554"
       },
       {
         "path": "firmware/src/cf_views.c",
-        "sha256": "81c64ca2497199ccbbb5a88641abdea85e8310be4d90910a7a50f90bbc150a8b"
+        "sha256": "ea3f66b780275424c36304af24e7e3666b87150e5d21b71d6a70e2802afdf1b3"
       },
       {
         "path": "firmware/src/cf_screens.c",
@@ -39,11 +39,11 @@
       },
       {
         "path": "firmware/src/cf_settings.c",
-        "sha256": "6a44aee4c9fc21b5f6756d9493abff8bf12b9eb01176a8dcce4bfa7397b748e9"
+        "sha256": "940bc98a8333b07219c93625e743f05c9745db95c6f8f12b2a99979f8757a0f5"
       },
       {
         "path": "firmware/src/cf_backup.c",
-        "sha256": "350ccb9b997e0f9984927e8d54a21ea51a28cdb6d887ac58e2abfd325aa785d1"
+        "sha256": "77ffb20ccfe731e13e18f19f4271110595999bf8d8b3bb9a1b0ddde2bd2cdea9"
       },
       {
         "path": "firmware/src/storage.c",
@@ -51,7 +51,19 @@
       },
       {
         "path": "firmware/src/cf_out.c",
-        "sha256": "9664a845ded55233d07651c5d5260760ce7c03b6e635ebc3a668638de0391ad4"
+        "sha256": "5cc6f202a7979e40a207d86b166bea130caedba65bed2331c5318ce404d0a436"
+      },
+      {
+        "path": "tests/cf_transport_strum_test.c",
+        "sha256": "7720cfa2fec706455d87faf165a776a42da5786747af22caf2cd601dbb6c0e34"
+      },
+      {
+        "path": "tests/cf_shape_test.c",
+        "sha256": "81c210104d088494960fc83114d9ff7da8778699b542808bb1cc29f660468a2d"
+      },
+      {
+        "path": "tools/test_shape.sh",
+        "sha256": "8332e2e0dcd8e16835d9a02b6d379ef37e8d8ecf4755d808985d5005ab12718d"
       }
     ]
   },

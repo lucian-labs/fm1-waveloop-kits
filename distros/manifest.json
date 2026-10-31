@@ -514,8 +514,8 @@
     {
       "id": "coralflower",
       "repository": "https://github.com/ELI7VH/CoralFlower",
-      "commit": "0d0d5a711824c5df1f7922a5a39a96efc6842dbd",
-      "status": "SHAYPE implemented and installed on TEST; native UI, 21 straight/triplet/dotted divisions through 1/64, independent storage/backup. Core parity,1854 timing/integration and target build checks pass. Other WaveLoop features are maps only.",
+      "commit": "af5079836647a6d69a1770b1980df71278def0e1",
+      "status": "SHAYPE implemented: native UI, 21 divisions through 1/64, optional transport-cycle lock, per-step up/down strums and independent storage/backup. wlshape3 built/host-tested; hardware pending, TEST currently wlshape2. Other WaveLoop features are maps only.",
       "seams": {
         "shape": [
           "firmware/src/arp_shape.c",
