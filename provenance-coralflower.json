@@ -6,7 +6,7 @@
   },
   "integration": {
     "repository": "https://github.com/ELI7VH/CoralFlower",
-    "commit": "af5079836647a6d69a1770b1980df71278def0e1",
+    "commit": "366fb4ebf1c4b3678ffebf33a106226704459870",
     "guide": "docs/SHAYPE.md",
     "files": [
       {

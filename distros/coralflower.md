@@ -1,10 +1,10 @@
 # CoralFlower
 
-**SHAYPE is implemented** in the [WaveLoop fork](https://github.com/ELI7VH/CoralFlower/tree/af5079836647a6d69a1770b1980df71278def0e1),
+**SHAYPE is implemented** in the [WaveLoop fork](https://github.com/ELI7VH/CoralFlower/tree/366fb4ebf1c4b3678ffebf33a106226704459870),
 using CoralFlower's own interface and chord/sequencer players. Based on
 [FicusFicusov/CoralFlower](https://github.com/FicusFicusov/CoralFlower) at `272cad9e85a444d879d72598807b7ca01a098d6d`.
 
-Use the [play/edit and developer guide](https://github.com/ELI7VH/CoralFlower/blob/af5079836647a6d69a1770b1980df71278def0e1/docs/SHAYPE.md)
+Use the [play/edit and developer guide](https://github.com/ELI7VH/CoralFlower/blob/366fb4ebf1c4b3678ffebf33a106226704459870/docs/SHAYPE.md)
 and [fork release packages](https://github.com/ELI7VH/CoralFlower/releases).
 This is an opt-in fork; no upstream PR or developer outreach has been sent.
 
@@ -61,4 +61,9 @@ No pattern or settings format change. All rate-pair/swing, duration and grid tes
 Two compound modes, SHAYPE > Up / Down, and Attach-page SYNC / GAP are implemented.
 2,716 new transport/strum/migration checks pass, alongside donor parity, 1,854 existing timing/player
 checks, 134 backup checks, focused UBSan and target build guards. Native emulator UI inspected.
-The wlshape3 build is prepared; physical installation/timing/listening are pending. TEST still runs wlshape2.
+Installed/reboot/readback verified on TEST as wlshape3. Fresh 27-object backup archived first; all 26
+native song/settings objects unchanged, shape migrated preserving its original 132 data bytes (Sync Free).
+Controlled target MIDI: each direction produced eight ordered strum pairs, silence while stopped and
+clean Stop. Temporary test settings/pattern restored; all 27 objects read back exactly. TEST is stopped
+with previous user settings retained. Physical listening and broad CPU testing remain separate.
+[Release](https://github.com/ELI7VH/CoralFlower/releases/tag/v0.6.1-wlshape3).
