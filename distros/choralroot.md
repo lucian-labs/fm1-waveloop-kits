@@ -1,8 +1,8 @@
 # ChoralRoot FM-1 + SHAYPE
 
-**Installed on TEST as ChoralRoot 0.27-wlshape3.** SHAYPE Pattern 13 selected; Perform enabled.
-[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/9b2b3c086104135ba4e49d84fde115cc9a020dc1) ·
-[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/9b2b3c086104135ba4e49d84fde115cc9a020dc1/docs/SHAYPE.md).
+**Hardware-tested: ChoralRoot 0.27-wlshape3.** Trial archived; TEST returned to CoralFlower + SHAYPE/strum on 2026-10-31. The ChoralRoot backup and matching build were retained.
+[Public fork](https://github.com/ELI7VH/ChoralRootFM1/tree/fd99c3dfbc7ce61dd253082866c2ef53026e7ce4) ·
+[controls and developer guide](https://github.com/ELI7VH/ChoralRootFM1/blob/fd99c3dfbc7ce61dd253082866c2ef53026e7ce4/docs/SHAYPE.md).
 Upstream: Quixotic7/ChoralRootFM1 at `ec9c54fdd7a0a544e8ec82bec196db745868f057`.
 
 ## SHAYPE implementation
@@ -56,10 +56,10 @@ note shifts12semitones per detent, affecting upcoming attacks without resetting 
 The prior reserved byte stores octave; legacy root remains in the record but is ignored.
 Older sessions use octave0; SHAYPE132bytes/sessionv2 1156bytes unchanged. Native globalSAVE persists it.
 2030SHAYPE fullUBSan and16UI/save/revert checks pass alongside native/core/build guards.
-Native emulator label inspected. wlshape2 installed; actual target MIDI confirmed exact±12shifts, all saved objects preserved. TEST is now wlshape3 below.
+Native emulator label inspected. wlshape2 installed; actual target MIDI confirmed exact±12shifts, all saved objects preserved. The trial subsequently advanced to wlshape3 below.
 FM1 transfer clients must distinguish this from wlshape1's ROOT floor; preserve signed octave on read/modify/write.
 
-## Scale Keys — wlshape3 installed
+## Scale Keys — wlshape3 hardware-tested
 
 Options → Chord Keys → **Scale Keys**: roots C4up follow selected Major/Minor key/scale.
 F/G/A/B select root/first/second/third inversion. Hold F♯/G♯/B♭ for diatonic7/9/13, alone or combined;

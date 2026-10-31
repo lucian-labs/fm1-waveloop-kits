@@ -6,8 +6,8 @@
   },
   "integration": {
     "repository": "https://github.com/ELI7VH/ChoralRootFM1",
-    "commit": "9b2b3c086104135ba4e49d84fde115cc9a020dc1",
-    "status": "wlshape3 installed/readback/target MIDI verified on TEST; Scale Keys selected, physical listening pending",
+    "commit": "fd99c3dfbc7ce61dd253082866c2ef53026e7ce4",
+    "status": "wlshape3 hardware-tested and archived; TEST returned to CoralFlower wlshape3 on 2026-10-31; physical listening acceptance not recorded",
     "files": [
       {
         "path": "firmware/src/arp_shape.c",

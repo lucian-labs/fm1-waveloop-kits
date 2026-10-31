@@ -549,7 +549,7 @@
     {
       "id": "choralroot",
       "repository": "https://github.com/ELI7VH/ChoralRootFM1",
-      "commit": "9b2b3c086104135ba4e49d84fde115cc9a020dc1",
+      "commit": "fd99c3dfbc7ce61dd253082866c2ef53026e7ce4",
       "status": "SHAYPE wlshape3 installed/reboot/readback and target MIDI verified on TEST. Octave-2..+2 and optional Scale Keys layout with scale-following chords, inversions and 7/9/13 combinations. Pattern13,22divisions,session69. Other kit modules remain maps only.",
       "seams": {
         "shape": [
