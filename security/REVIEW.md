@@ -12,6 +12,8 @@ Existing distro maps are path references, not security approvals. Do not mark th
 3. Verify toolchain/SDK archive SHA-256 against an independently trusted reference before extraction.
    Reject mismatches, rather than merely warning. Pin container images by digest and CI actions by commit.
    A checksum computed from a new download records identity; it does not establish trust in that download.
+   **Anything not fingerprinted by a hash denies the build:** run `tools/pin_gate.py`; `docker_build.py` refuses
+   on any finding. Answer every [review touchpoint](TOUCHPOINTS.md) in the report.
 4. Build offline with the isolated wrapper below. Record unavailable dependencies rather than silently
    enabling networking. Audit and fetch dependencies separately. Keep installation outside the container.
 5. Record findings, source/dependency fingerprints, actual checks, unresolved risks and review limits using

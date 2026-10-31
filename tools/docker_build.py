@@ -8,7 +8,10 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
+
+import pin_gate
 
 
 def main():
@@ -31,6 +34,12 @@ def main():
     if os.getuid() == 0:
         p.error('run as a non-root host user')
     source = a.source.resolve(strict=True)
+    # anything the distro fetches or runs that is not fingerprinted by a hash: no build (security/REVIEW.md)
+    unpinned = pin_gate.scan(str(source), a.commit)
+    if unpinned:
+        for f in unpinned:
+            print(f"DENY {f['rule']} {f['file']}:{f['line']}  {f['why']}", file=sys.stderr)
+        raise SystemExit(f'Build denied: {len(unpinned)} unpinned input(s); see tools/pin_gate.py')
     inputs = []
     names = {'source.tar'}
     for name, filename, expected in a.input:
