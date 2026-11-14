@@ -74,3 +74,5 @@ Pinned source revisions and hashes live in [provenance.json](provenance.json); e
 ## 128-step extension
 
 [Eight-bar patterns at 1/16](kits/128_steps/README.md): exact-base Switch Blade patch, legacy import and atomic extended saves. Other distros need their own storage audit.
+
+You can also try FM-1 Waveloop Kits in the browser, no flashing needed, in the free community [FM-1 Emulator](https://fm1-emulator.atst.tools/).
